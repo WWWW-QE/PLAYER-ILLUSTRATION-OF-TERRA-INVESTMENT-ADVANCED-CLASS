@@ -1,0 +1,1543 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>对垒数据集 - 好得不能再好了！泰拉投资进阶课</title>
+    <style>
+      :root {
+        --prts-page-text: #202122;
+        --prts-page-border: #a2a9b1;
+        --prts-page-card-bg: #ffffff;
+        --prts-page-subtle-bg: #f8f9fa;
+        --prts-red: #c01d22;
+        --prts-red-dark: #e7615c;
+        --prts-red-light: #f3acaa;
+        --prts-blue: #2080f0;
+        --prts-blue-dark: #4487df;
+        --prts-blue-light: #85c1f7;
+        --prts-green: #b9e66b;
+        --prts-dark: #373737;
+        --prts-golden: #f4c430;
+        --prts-muted-text: #72777d;
+        --prts-bg: #f6f6f3;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--prts-bg);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        color: var(--prts-page-text);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      body::before {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        content: "";
+        z-index: -1;
+        background: repeating-linear-gradient(45deg, rgba(0,0,0,0.02) 0 2px, transparent 2px 4px);
+        opacity: 0.6;
+      }
+      .page-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px 20px;
+      }
+      .page-header {
+        background: var(--prts-dark);
+        color: #eaeaea;
+        padding: 10px 20px;
+        margin: 0 -20px 16px -20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .page-header .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .page-header .logo-icon {
+        height: 36px;
+        width: auto;
+      }
+      .page-header .site-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .page-header .site-title small {
+        font-weight: 400;
+        color: #aaa;
+        font-size: 12px;
+      }
+      .page-header .header-links {
+        display: flex;
+        gap: 18px;
+        font-size: 12px;
+      }
+      .page-header .header-links a {
+        color: #ccc;
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+      .page-header .header-links a:hover {
+        color: var(--prts-golden);
+      }
+      .page-wrapper .page-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .breadcrumb {
+        font-size: 12px;
+        color: var(--prts-muted-text);
+        margin-bottom: 12px;
+        padding: 4px 0;
+      }
+      .breadcrumb a {
+        color: var(--prts-blue);
+        text-decoration: none;
+      }
+      .breadcrumb a:hover {
+        text-decoration: underline;
+      }
+      .breadcrumb .sep {
+        color: #aaa;
+        margin: 0 4px;
+      }
+      .title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--prts-page-border);
+      }
+      .title-bar h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--prts-page-text);
+        line-height: 1.3;
+      }
+      .title-bar .subtitle {
+        font-size: 13px;
+        color: var(--prts-muted-text);
+      }
+      .info-box {
+        display: flex;
+        flex-direction: row;
+        background: #fdf5f5;
+        border: 1px solid var(--prts-red-light);
+        border-radius: 3px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+      .info-box-icon {
+        display: flex;
+        padding: 10px;
+        width: 44px;
+        min-width: 44px;
+        justify-content: center;
+        align-items: center;
+        background: var(--prts-red-light);
+        color: var(--prts-red-dark);
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .info-box-content {
+        padding: 10px 14px;
+        flex: 1;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .info-box-content strong {
+        color: var(--prts-red);
+      }
+      .card {
+        background: var(--prts-page-card-bg);
+        border: 1px solid var(--prts-page-border);
+        border-radius: 3px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      }
+      .card-header {
+        padding: 10px 16px;
+        background: var(--prts-page-subtle-bg);
+        border-bottom: 1px solid var(--prts-page-border);
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .card-header .header-extra {
+        font-weight: 400;
+        font-size: 12px;
+        color: var(--prts-muted-text);
+      }
+      .card-body {
+        padding: 12px 16px;
+      }
+      .filter-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        align-items: center;
+      }
+      .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 4px 8px;
+        flex-wrap: wrap;
+      }
+      .filter-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #444;
+        white-space: nowrap;
+        background: var(--prts-page-subtle-bg);
+        padding: 2px 8px;
+        border-radius: 2px;
+        border: 1px solid #ddd;
+      }
+      .filter-group input,
+      .filter-group select {
+        border: 1px solid #c8ccd1;
+        border-radius: 2px;
+        padding: 5px 10px;
+        font-size: 13px;
+        font-family: inherit;
+        background: #fff;
+        color: var(--prts-page-text);
+        outline: none;
+        transition: border-color 0.15s;
+        min-width: 100px;
+      }
+      .filter-group input:focus,
+      .filter-group select:focus {
+        border-color: var(--prts-blue);
+        box-shadow: 0 0 0 2px rgba(32, 128, 240, 0.15);
+      }
+      .filter-group input {
+        min-width: 180px;
+        flex: 1;
+      }
+      .filter-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+      .btn {
+        border: 1px solid #c8ccd1;
+        border-radius: 2px;
+        padding: 5px 14px;
+        font-size: 12px;
+        font-family: inherit;
+        cursor: pointer;
+        background: #fff;
+        color: var(--prts-page-text);
+        transition: all 0.15s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .btn:hover {
+        background: var(--prts-page-subtle-bg);
+        border-color: #a2a9b1;
+      }
+      .btn-primary {
+        background: var(--prts-blue);
+        border-color: var(--prts-blue);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #1a6fd9;
+        border-color: #1a6fd9;
+      }
+      .result-stats {
+        font-size: 12px;
+        color: var(--prts-muted-text);
+        background: var(--prts-page-subtle-bg);
+        padding: 3px 10px;
+        border-radius: 2px;
+        border: 1px solid #eaecf0;
+        white-space: nowrap;
+      }
+      .hint-text {
+        font-size: 11px;
+        color: var(--prts-muted-text);
+        margin: -8px 0 12px 0;
+        padding: 0 4px;
+      }
+      .table-wrapper {
+        overflow-x: auto;
+        border: 1px solid var(--prts-page-border);
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        min-width: 1300px;
+      }
+      .data-table th,
+      .data-table td {
+        border: 1px solid #c8ccd1;
+        padding: 6px 8px;
+        vertical-align: middle;
+        text-align: center;
+        background: #fff;
+      }
+      .data-table th {
+        background: var(--prts-red);
+        color: #fff;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.2px;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        white-space: nowrap;
+        cursor: default;
+      }
+      .data-table th .th-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      .data-table td img {
+        max-width: 64px;
+        max-height: 64px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 2px;
+        background: #f0f0f0;
+        padding: 2px;
+      }
+      .data-table td:first-child {
+        font-weight: 600;
+        text-align: center;
+      }
+      .data-table tr:nth-child(even) td {
+        background: #f8f9fa;
+      }
+      .data-table tr:hover td {
+        background: #eaf3ff;
+      }
+      .ability-btn {
+        background: #f0f0f0;
+        border: 1px solid #c8ccd1;
+        padding: 4px 14px;
+        border-radius: 2px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #444;
+        cursor: pointer;
+        transition: all 0.15s;
+        font-family: inherit;
+      }
+      .ability-btn:hover {
+        background: var(--prts-blue);
+        border-color: var(--prts-blue);
+        color: #fff;
+      }
+      .data-table tr.hide-row {
+        display: none;
+      }
+      .no-result-msg {
+        text-align: center;
+        padding: 40px 16px;
+        background: #fff;
+        font-size: 14px;
+        color: var(--prts-muted-text);
+        border: 1px dashed #c8ccd1;
+        border-top: none;
+      }
+      .player-icon-wrapper {
+        position: relative;
+        display: inline-block;
+        line-height: 0;
+      }
+      .player-number {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: rgba(0, 0, 0, 0.65);
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 5px;
+        text-align: center;
+        white-space: nowrap;
+        font-family: monospace;
+        letter-spacing: 0.3px;
+        pointer-events: none;
+        z-index: 1;
+        line-height: 1.3;
+      }
+      .custom-popup {
+        position: fixed;
+        z-index: 10000;
+        background: #fff;
+        border-radius: 3px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        width: 340px;
+        max-width: 400px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        border: 1px solid var(--prts-page-border);
+      }
+      .popup-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 14px;
+        touch-action: none;
+        background: var(--prts-page-subtle-bg);
+        cursor: move;
+        border-bottom: 1px solid var(--prts-page-border);
+        user-select: none;
+      }
+      .popup-title {
+        font-weight: 600;
+        color: var(--prts-page-text);
+        font-size: 14px;
+      }
+      .popup-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--prts-muted-text);
+        transition: 0.1s;
+        padding: 0 6px;
+        min-width: 36px;
+        font-family: inherit;
+      }
+      .popup-close:hover {
+        color: var(--prts-red);
+      }
+      .popup-content {
+        padding: 14px 16px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--prts-page-text);
+        word-break: break-word;
+        white-space: pre-wrap;
+        max-height: 320px;
+        overflow-y: auto;
+      }
+      .popup-content p {
+        margin: 0;
+      }
+      body.dragging {
+        user-select: none;
+      }
+      .header-tooltip {
+        position: fixed;
+        z-index: 10001;
+        background: #fff;
+        border-radius: 3px;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+        padding: 8px 12px;
+        max-width: 300px;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--prts-page-text);
+        pointer-events: none;
+        white-space: pre-line;
+        word-break: break-word;
+        border: 1px solid var(--prts-page-border);
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+      .header-tooltip.visible {
+        opacity: 1;
+      }
+      .level-badge {
+        display: inline-block;
+        padding: 1px 8px;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .level-common {
+        background: #e8e8e8;
+        color: #555;
+      }
+      .level-elite {
+        background: #d4e8f7;
+        color: #1a6fd9;
+      }
+      .level-mini-leader {
+        background: #f7e8d4;
+        color: #b87a1a;
+      }
+      .level-mid-leader {
+        background: #f7d4d4;
+        color: #b81a1a;
+      }
+      .level-high-leader {
+        background: #d4d4f7;
+        color: #4a1ab8;
+      }
+      .dmg-badge {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .dmg-phys {
+        background: #e8e0d0;
+        color: #7a5a2a;
+      }
+      .dmg-magic {
+        background: #d0d8e8;
+        color: #2a4a7a;
+      }
+      .dmg-true {
+        background: #e0d0e8;
+        color: #5a2a7a;
+      }
+      .resist-yes {
+        color: #1a7a1a;
+        font-weight: 600;
+      }
+      .resist-no {
+        color: #aaa;
+      }
+      footer {
+        text-align: center;
+        font-size: 11px;
+        margin-top: 24px;
+        padding: 16px 0;
+        color: var(--prts-muted-text);
+        border-top: 1px solid #eaecf0;
+      }
+      footer a {
+        color: var(--prts-muted-text);
+        text-decoration: none;
+      }
+      footer a:hover {
+        color: var(--prts-blue);
+      }
+      @media (max-width: 768px) {
+        .page-wrapper {
+          padding: 8px 10px;
+        }
+        .page-header {
+          margin: 0 -10px 12px -10px;
+          padding: 8px 12px;
+        }
+        .filter-grid {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .filter-group {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .filter-group input,
+        .filter-group select {
+          min-width: 0;
+          width: 100%;
+        }
+        .filter-actions {
+          margin-left: 0;
+        }
+        .title-bar h1 {
+          font-size: 20px;
+        }
+        .custom-popup {
+          width: calc(100vw - 20px);
+          max-width: 360px;
+        }
+      }
+      .detail-view {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 16px 20px;
+      }
+      .detail-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .detail-title {
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .detail-card {
+        display: flex;
+        gap: 20px;
+        background: #fff;
+        border: 1px solid var(--prts-page-border);
+        border-radius: 3px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      }
+      .detail-icon-area {
+        position: relative;
+        flex-shrink: 0;
+      }
+      .detail-icon {
+        width: 130px;
+        height: 130px;
+        object-fit: contain;
+        background: #f0f0f0;
+        border-radius: 3px;
+      }
+      .detail-number {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: rgba(0,0,0,0.65);
+        color: #fff;
+        font-size: 14px;
+        font-weight: bold;
+        padding: 2px 8px;
+      }
+      .detail-info {
+        flex: 1;
+      }
+      .detail-meta {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 12px;
+        font-size: 14px;
+      }
+      .detail-ability {
+        font-size: 13px;
+        line-height: 1.6;
+        background: var(--prts-page-subtle-bg);
+        padding: 12px;
+        border-radius: 3px;
+        border: 1px solid #eaecf0;
+      }
+      .detail-stats-table {
+        margin-bottom: 12px;
+        min-width: 0;
+      }
+      .detail-stats-table th {
+        font-size: 11px;
+      }
+      .detail-stats-table td {
+        font-weight: 600;
+      }
+      @media (max-width: 768px) {
+        .detail-view {
+          padding: 8px 10px;
+        }
+        .detail-header {
+          flex-wrap: wrap;
+        }
+        .detail-title {
+          font-size: 18px;
+        }
+        .detail-card {
+          flex-direction: column;
+          padding: 14px;
+        }
+        .detail-icon {
+          width: 96px;
+          height: 96px;
+        }
+        .detail-meta {
+          flex-wrap: wrap;
+          gap: 4px 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <div class="page-header">
+        <div class="logo-area">
+          <img class="logo-icon" src="DUEL.png" alt="DUEL" />
+          <div class="site-title">
+            泰拉投资进阶课
+            <small>All or Nothing！！！</small>
+          </div>
+        </div>
+        <div class="header-links">
+          <a href="javascript:void(0)" class="home-btn">回到顶部</a>
+          <a href="https://www.bilibili.com/video/BV1Zput6YE7H/"
+            >争锋快报</a
+          >
+        </div>
+      </div>
+
+      <div class="breadcrumb">
+        <a href="https://prts.wiki">PRTS</a>
+        <span class="sep">></span>
+        <a href="https://prts.wiki/w/%E4%BA%89%E9%94%8B%E9%A2%91%E9%81%93"
+          >争锋频道</a
+        >
+        <span class="sep">></span>
+        <a href="../../Navigation/index.html">比赛数据纵览</a>
+        <span class="sep">></span>
+        <span>对垒数据集</span>
+      </div>
+
+      <div class="title-bar">
+        <div>
+          <h1>对垒数据集</h1>
+          <div class="subtitle">争锋会员专享 - 全量数据纵览</div>
+        </div>
+        <a class="btn" style="font-size: 12px" href="../../Navigation/index.html"
+          >◀ 返回导航页面</a
+        >
+      </div>
+
+      <div class="info-box">
+        <div class="info-box-icon">i</div>
+        <div class="info-box-content">
+          <strong>本页面仅供参考。</strong><br />
+          本页面的选手数据只代表其在同人作品《泰拉投资进阶课》中的数据，具体信息请点击该选手图标进入详情页查看。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>筛选与搜索</span>
+          <span class="header-extra">支持任意字段模糊搜索 + 定向筛选</span>
+        </div>
+        <div class="card-body">
+          <div class="filter-grid">
+            <div class="filter-group" style="flex: 2">
+              <label>搜索</label>
+              <input
+                type="text"
+                id="searchKeyword"
+                placeholder="输入选手名、属性值、抗性、天赋关键词..."
+                autocomplete="off"
+              />
+            </div>
+            <div class="filter-group">
+              <label>伤害</label>
+              <select id="dmgTypeFilter">
+                <option value="all">全部类型</option>
+                <option value="物理">物理</option>
+                <option value="法术">法术</option>
+                <option value="真实">真实</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>级别</label>
+              <select id="levelFilter">
+                <option value="all">全部级别</option>
+                <option value="普通">普通</option>
+                <option value="精英">精英</option>
+                <option value="初级领袖">初级领袖</option>
+                <option value="中级领袖">中级领袖</option>
+                <option value="高级领袖">高级领袖</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>抗性</label>
+              <select id="resistTypeSelect">
+                <option value="all">全部类型</option>
+                <option value="silence">沉默抗性</option>
+                <option value="stun">晕眩抗性</option>
+                <option value="frozen">冻结抗性</option>
+                <option value="disarmedCombat">战栗抗性</option>
+                <option value="palsy">麻痹抗性</option>
+              </select>
+              <select id="resistValueSelect">
+                <option value="all">全部</option>
+                <option value="有">有抗性</option>
+                <option value="无">无抗性</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>排序</label>
+              <select id="sortBySelect" style="min-width: 110px">
+                <option value="default">默认排序</option>
+                <option value="level">选手级别</option>
+                <option value="hp">最大生命值</option>
+                <option value="atk">攻击力</option>
+                <option value="def">防御力</option>
+                <option value="mres">法术抗性</option>
+                <option value="dph">DPH</option>
+                <option value="dps">DPS</option>
+                <option value="burnDps">燃命DPS</option>
+                <option value="physResist">物理承受</option>
+                <option value="magicResist">法术承受</option>
+                <option value="dmgResist">损伤承受</option>
+              </select>
+              <select id="sortOrderSelect">
+                <option value="asc">升序</option>
+                <option value="desc">降序</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <span class="result-stats" id="resultCount">共 0 名参赛者</span>
+              <button class="btn" id="clearSearchBtn">清除筛选</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="dataTable">
+          <thead>
+            <tr>
+              <th><span class="th-inner">参赛代名</span></th>
+              <th><span class="th-inner">选手图标</span></th>
+              <th><span class="th-inner">选手级别</span></th>
+              <th><span class="th-inner">伤害类型</span></th>
+              <th><span class="th-inner">攻击范围半径</span></th>
+              <th><span class="th-inner">移动速度</span></th>
+              <th><span class="th-inner">DPH</span></th>
+              <th><span class="th-inner">DPS</span></th>
+              <th><span class="th-inner">燃命DPS</span></th>
+              <th><span class="th-inner">物理承受</span></th>
+              <th><span class="th-inner">法术承受</span></th>
+              <th><span class="th-inner">损伤承受</span></th>
+              <th><span class="th-inner">沉默抗性</span></th>
+              <th><span class="th-inner">晕眩抗性</span></th>
+              <th><span class="th-inner">冻结抗性</span></th>
+              <th><span class="th-inner">战栗抗性</span></th>
+              <th><span class="th-inner">麻痹抗性</span></th>
+              <th><span class="th-inner">权重占比</span></th>
+              <th><span class="th-inner">天赋与能力</span></th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div id="noDataMsg" class="no-result-msg" style="display: none">
+          没有匹配到任何参赛者信息，请尝试其他关键词
+        </div>
+      </div>
+
+      <footer>
+        <a href="https://space.bilibili.com/407698456/"
+          >游戏作者: bilibili@锦木千束_Chisato</a
+        >
+        - UID:407698456
+      </footer>
+    </div>
+
+    <div id="headerTooltip" class="header-tooltip"></div>
+
+    <div id="detailView" class="detail-view" style="display:none;">
+      <div class="page-header">
+        <div class="logo-area">
+          <img class="logo-icon" src="DUEL.png" alt="DUEL" />
+          <div class="site-title">
+            泰拉投资进阶课
+            <small>All or Nothing！！！</small>
+          </div>
+        </div>
+        <div class="header-links">
+          <a href="javascript:void(0)" class="home-btn">回到顶部</a>
+          <a href="https://www.bilibili.com/video/BV1Zput6YE7H/">争锋快报</a>
+        </div>
+      </div>
+      <div class="detail-header">
+        <button id="backToDirBtn" class="btn">← 返回目录</button>
+        <span class="detail-title" id="detailPlayerName">选手名称</span>
+      </div>
+      <div class="detail-card">
+        <div class="detail-icon-area">
+          <img id="detailIcon" src="" alt="" class="detail-icon">
+          <span class="detail-number" id="detailNumber"></span>
+        </div>
+        <div class="detail-info">
+          <div class="detail-meta">
+            <span><strong>参赛代名：</strong><span id="detailNickname"></span></span>
+            <span><strong>级别：</strong><span id="detailLevel"></span></span>
+            <span><strong>伤害类型：</strong><span id="detailDmgType"></span></span>
+          </div>
+          <div class="detail-ability">
+            <strong>天赋与能力</strong>
+            <p id="detailAbility"></p>
+          </div>
+          <div class="detail-ability" style="margin-top:12px;">
+            <strong>选手简介</strong>
+            <p id="detailDesc"></p>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+      <table class="data-table detail-stats-table">
+        <thead>
+          <tr>
+            <th>最大生命值</th><th>攻击力</th><th>防御力</th><th>法术抗性</th>
+            <th>攻击间隔</th><th>攻击范围</th><th>移动速度</th>
+            <th>DPH</th><th>DPS</th><th>燃命DPS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="dHp"></td><td id="dAtk"></td><td id="dDef"></td><td id="dMres"></td>
+            <td id="dInterval"></td><td id="dRange"></td><td id="dSpeed"></td>
+            <td id="dDph"></td><td id="dDps"></td><td id="dBurnDps"></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="table-wrapper">
+      <table class="data-table detail-stats-table">
+        <thead>
+          <tr>
+            <th>物理承受</th><th>法术承受</th><th>损伤承受</th>
+            <th>沉默抗性</th><th>晕眩抗性</th><th>冻结抗性</th>
+            <th>战栗抗性</th><th>麻痹抗性</th><th>权重占比</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="dPhysResist"></td><td id="dMagicResist"></td><td id="dDmgResist"></td>
+            <td id="dSilence"></td><td id="dStun"></td><td id="dFrozen"></td>
+            <td id="dDisarmedCombat"></td><td id="dPalsy"></td><td id="dCost"></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <script src="players.js"></script>
+    <script>
+      (function () {
+        const levelOrder = {
+          普通: 1,
+          精英: 2,
+          初级领袖: 3,
+          中级领袖: 4,
+          高级领袖: 5,
+        };
+
+        const activePopups = new Map();
+        function getRowIdentifier(row) {
+          const nameCell = row.querySelector("td:first-child");
+          return nameCell ? nameCell.innerText.trim() : "";
+        }
+        function closePopupByIdentifier(identifier) {
+          const popup = activePopups.get(identifier);
+          if (popup && popup.parentNode) {
+            popup.parentNode.removeChild(popup);
+            activePopups.delete(identifier);
+          }
+        }
+        function closeAllPopups() {
+          for (let [identifier] of activePopups) {
+            closePopupByIdentifier(identifier);
+          }
+        }
+        function makeDraggable(popup, handleSelector) {
+          let isDragging = false,
+            startX,
+            startY,
+            initialLeft,
+            initialTop;
+          const handle = popup.querySelector(handleSelector);
+          if (!handle) return;
+          function onDragStart(e) {
+            if (e.target.closest(".popup-close")) return;
+            const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+            if (clientX === undefined || clientY === undefined) return;
+            if (e.type === "mousedown" && e.button !== 0) return;
+            e.preventDefault();
+            const rect = popup.getBoundingClientRect();
+            startX = clientX;
+            startY = clientY;
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            isDragging = true;
+            document.body.classList.add("dragging");
+            window.addEventListener("mousemove", onDragMove);
+            window.addEventListener("mouseup", onDragEnd);
+            window.addEventListener("touchmove", onDragMove, {
+              passive: false,
+            });
+            window.addEventListener("touchend", onDragEnd);
+            window.addEventListener("touchcancel", onDragEnd);
+          }
+          function onDragMove(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+            if (clientX === undefined || clientY === undefined) return;
+            let dx = clientX - startX,
+              dy = clientY - startY;
+            let newLeft = initialLeft + dx,
+              newTop = initialTop + dy;
+            const maxX = window.innerWidth - popup.offsetWidth - 10;
+            const maxY = window.innerHeight - popup.offsetHeight - 10;
+            newLeft = Math.min(Math.max(10, newLeft), maxX);
+            newTop = Math.min(Math.max(10, newTop), maxY);
+            popup.style.left = newLeft + "px";
+            popup.style.top = newTop + "px";
+          }
+          function onDragEnd() {
+            if (isDragging) {
+              isDragging = false;
+              document.body.classList.remove("dragging");
+              window.removeEventListener("mousemove", onDragMove);
+              window.removeEventListener("mouseup", onDragEnd);
+              window.removeEventListener("touchmove", onDragMove);
+              window.removeEventListener("touchend", onDragEnd);
+              window.removeEventListener("touchcancel", onDragEnd);
+            }
+          }
+          handle.addEventListener("mousedown", onDragStart);
+          handle.addEventListener("touchstart", onDragStart, {
+            passive: false,
+          });
+        }
+        function createPopup(
+          abilityText,
+          triggerButton,
+          rowIdentifier,
+          playerName,
+        ) {
+          if (activePopups.has(rowIdentifier)) {
+            closePopupByIdentifier(rowIdentifier);
+            return null;
+          }
+          const popup = document.createElement("div");
+          popup.className = "custom-popup";
+          const btnRect = triggerButton.getBoundingClientRect();
+          let left = btnRect.right + 8,
+            top = btnRect.top - 10;
+          const popupWidth = 340,
+            popupHeightHint = 200;
+          if (left + popupWidth > window.innerWidth - 10)
+            left = btnRect.left - popupWidth - 8;
+          if (left < 10) left = 10;
+          if (top + popupHeightHint > window.innerHeight - 20)
+            top = window.innerHeight - popupHeightHint - 20;
+          if (top < 10) top = 10;
+          popup.style.left = left + "px";
+          popup.style.top = top + "px";
+          const header = document.createElement("div");
+          header.className = "popup-header";
+          const titleSpan = document.createElement("span");
+          titleSpan.className = "popup-title";
+          titleSpan.innerText = playerName + " - 天赋能力";
+          const closeBtn = document.createElement("button");
+          closeBtn.className = "popup-close";
+          closeBtn.innerHTML = "x";
+          header.appendChild(titleSpan);
+          header.appendChild(closeBtn);
+          const contentDiv = document.createElement("div");
+          contentDiv.className = "popup-content";
+          const contentText = document.createElement("p");
+          const displayText =
+            abilityText &&
+            abilityText.trim() !== "" &&
+            abilityText.trim() !== "无"
+              ? abilityText
+              : "无特殊天赋";
+          contentText.innerHTML = displayText;
+          contentDiv.appendChild(contentText);
+          popup.appendChild(header);
+          popup.appendChild(contentDiv);
+          document.body.appendChild(popup);
+          const closePopupHandler = () => {
+            if (popup && popup.parentNode) {
+              popup.parentNode.removeChild(popup);
+              activePopups.delete(rowIdentifier);
+            }
+          };
+          closeBtn.addEventListener("click", closePopupHandler);
+          makeDraggable(popup, ".popup-header");
+          activePopups.set(rowIdentifier, popup);
+          return popup;
+        }
+
+        function getLevelBadgeHtml(level) {
+          const clsMap = {
+            普通: "level-common",
+            精英: "level-elite",
+            初级领袖: "level-mini-leader",
+            中级领袖: "level-mid-leader",
+            高级领袖: "level-high-leader",
+          };
+          const cls = clsMap[level] || "level-common";
+          return '<span class="level-badge ' + cls + '">' + level + "</span>";
+        }
+
+        function getDmgBadgeHtml(dmgType) {
+          const types = dmgType.split("、");
+          const parts = types.map(function (t) {
+            var cls = "dmg-phys";
+            if (t.indexOf("法术") !== -1) cls = "dmg-magic";
+            if (t.indexOf("真实") !== -1) cls = "dmg-true";
+            return '<span class="dmg-badge ' + cls + '">' + t + "</span>";
+          });
+          return parts.join(" ");
+        }
+
+        function getResistHtml(val) {
+          if (val === "有") return '<span class="resist-yes">有</span>';
+          return '<span class="resist-no">无</span>';
+        }
+
+        function renderTableFromData(dataArray) {
+          activePopups.forEach(function (popup) {
+            if (popup && popup.parentNode) popup.parentNode.removeChild(popup);
+          });
+          activePopups.clear();
+          var tbody = document.getElementById("tableBody");
+          tbody.innerHTML = "";
+          dataArray.forEach(function (p) {
+            var tr = document.createElement("tr");
+            tr.className = "data-row";
+            var cells = [
+              p.nickname || p.name,
+              '<img src="' + p.icon + '" alt="' + p.name + '">',
+              getLevelBadgeHtml(p.level),
+              getDmgBadgeHtml(p.dmgType),
+              p.range,
+              p.speed,
+              p.dph,
+              p.dps,
+              p.burnDps,
+              p.physResist,
+              p.magicResist,
+              p.dmgResist,
+              getResistHtml(p.silence),
+              getResistHtml(p.stun),
+              getResistHtml(p.frozen),
+              getResistHtml(p.disarmedCombat),
+              getResistHtml(p.palsy),
+              p.cost,
+              p.ability,
+            ];
+            cells.forEach(function (content, idx) {
+              var td = document.createElement("td");
+              if (idx === 1) {
+                td.style.textAlign = "center";
+                var wrapperDiv = document.createElement("div");
+                wrapperDiv.className = "player-icon-wrapper";
+                var img = document.createElement("img");
+                img.src = p.icon;
+                img.alt = p.name + " 图标";
+                img.style.maxWidth = "64px";
+                img.style.maxHeight = "64px";
+                img.style.width = "auto";
+                img.style.height = "auto";
+                img.style.borderRadius = "2px";
+                img.style.background = "#f0f0f0";
+                img.style.padding = "2px";
+                var numberSpan = document.createElement("span");
+                numberSpan.className = "player-number";
+                numberSpan.textContent = p.number || "?";
+                wrapperDiv.appendChild(img);
+                wrapperDiv.appendChild(numberSpan);
+                wrapperDiv.style.cursor = "pointer";
+                wrapperDiv.addEventListener("click", function () {
+                  showDetail(p);
+                });
+                td.appendChild(wrapperDiv);
+              } else {
+                td.innerHTML = content;
+              }
+              tr.appendChild(td);
+            });
+            tr.dataset.originalAbility = p.ability;
+            tr.dataset.playerName = p.name;
+            tbody.appendChild(tr);
+          });
+          replaceAbilityCellsWithButtons();
+          updateResultCount(dataArray.length);
+        }
+
+        function replaceAbilityCellsWithButtons() {
+          var rows = document.querySelectorAll("#tableBody .data-row");
+          rows.forEach(function (row) {
+            var cells = row.querySelectorAll("td");
+            if (cells.length === 0) return;
+            var abilityCell = cells[cells.length - 1];
+            var originalAbility = row.dataset.originalAbility || "";
+            var playerName = row.dataset.playerName || "";
+            abilityCell.innerHTML = "";
+            var viewBtn = document.createElement("button");
+            viewBtn.className = "ability-btn";
+            viewBtn.innerText = "查看";
+            viewBtn.setAttribute("data-ability", originalAbility);
+            viewBtn.setAttribute("data-player", playerName);
+            abilityCell.appendChild(viewBtn);
+            viewBtn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              var ability = viewBtn.getAttribute("data-ability") || "";
+              var pName = viewBtn.getAttribute("data-player") || "选手";
+              var rowEl = viewBtn.closest(".data-row");
+              if (!rowEl) return;
+              var identifier = getRowIdentifier(rowEl);
+              if (activePopups.has(identifier))
+                closePopupByIdentifier(identifier);
+              else createPopup(ability, viewBtn, identifier, pName);
+            });
+          });
+        }
+
+        function updateResultCount(count) {
+          var keyword = document.getElementById("searchKeyword").value.trim();
+          var prefix = keyword === "" ? "共" : "匹配";
+          var suffix = "名参赛者";
+          document.getElementById("resultCount").innerHTML =
+            prefix + " " + count + " " + suffix;
+          document.getElementById("noDataMsg").style.display =
+            count === 0 ? "block" : "none";
+        }
+
+        function getFilteredAndSortedData() {
+          var keyword = document
+            .getElementById("searchKeyword")
+            .value.trim()
+            .toLowerCase();
+          var dmgType = document.getElementById("dmgTypeFilter").value;
+          var level = document.getElementById("levelFilter").value;
+          var resistField = document.getElementById("resistTypeSelect").value;
+          var resistVal = document.getElementById("resistValueSelect").value;
+
+          var filtered = playersData.filter(function (p) {
+            if (dmgType !== "all" && p.dmgType.indexOf(dmgType) === -1)
+              return false;
+            if (level !== "all" && p.level !== level) return false;
+            if (resistField !== "all") {
+              if (resistVal !== "all") {
+                var playerResist = p[resistField];
+                if (resistVal === "有" && playerResist !== "有") return false;
+                if (resistVal === "无" && playerResist !== "无") return false;
+              }
+            }
+            if (keyword !== "") {
+              var searchable = (
+                p.name +
+                " " +
+                p.nickname +
+                " " +
+                p.level +
+                " " +
+                p.dmgType +
+                " " +
+                p.dph +
+                " " +
+                p.dps +
+                " " +
+                p.burnDps +
+                " " +
+                p.physResist +
+                " " +
+                p.magicResist +
+                " " +
+                p.dmgResist +
+                " " +
+                p.silence +
+                " " +
+                p.stun +
+                " " +
+                p.frozen +
+                " " +
+                p.disarmedCombat +
+                " " +
+                p.palsy +
+                " " +
+                p.cost +
+                " " +
+                p.ability
+              ).toLowerCase();
+              if (searchable.indexOf(keyword) === -1) return false;
+            }
+            return true;
+          });
+
+          var sortBy = document.getElementById("sortBySelect").value;
+          var sortOrder = document.getElementById("sortOrderSelect").value;
+          if (sortBy !== "default") {
+            filtered.sort(function (a, b) {
+              var valA, valB;
+              if (sortBy === "level") {
+                valA = levelOrder[a.level] || 99;
+                valB = levelOrder[b.level] || 99;
+              } else {
+                valA = a[sortBy];
+                valB = b[sortBy];
+                if (typeof valA === "string" && !isNaN(parseFloat(valA)))
+                  valA = parseFloat(valA);
+                if (typeof valB === "string" && !isNaN(parseFloat(valB)))
+                  valB = parseFloat(valB);
+              }
+              if (sortOrder === "asc") return valA > valB ? 1 : -1;
+              else return valA < valB ? 1 : -1;
+            });
+          }
+
+          return filtered;
+        }
+
+        function applyFiltersAndSort() {
+          var filtered = getFilteredAndSortedData();
+          renderTableFromData(filtered);
+        }
+
+        function resetAllFilters() {
+          document.getElementById("searchKeyword").value = "";
+          document.getElementById("dmgTypeFilter").value = "all";
+          document.getElementById("levelFilter").value = "all";
+          document.getElementById("resistTypeSelect").value = "all";
+          document.getElementById("resistValueSelect").value = "all";
+          document.getElementById("sortBySelect").value = "default";
+          document.getElementById("sortOrderSelect").value = "asc";
+          applyFiltersAndSort();
+        }
+
+        var tooltipEl = document.getElementById("headerTooltip");
+        var tooltipTimer = null;
+        var currentHoverTh = null;
+
+        var TOOLTIP_TEXTS = [
+          "这里显示选手被称为什么",
+          "这里显示选手大致长什么样",
+          "物以类聚，人以群分",
+          "这里显示选手能造成哪种伤害",
+          "对于任何能作出攻击行为的选手，他们都会攻击进入其攻击范围的前n个单位（其中n=攻击目标数）；特别地，能够进行近战的选手通常会优先攻击自己正阻挡着的敌人",
+          "通常，该值越高代表着敌方单位能以更快的速度到达目标地点",
+          "该值越高代表着选手每一次攻击越沉重",
+          "该值越高代表着选手的攻击越迅速",
+          "该值越高代表着选手在源石兴奋状态下的攻击越迅速\n源石兴奋：受影响的选手攻击力+100%，攻击速度+50，但每秒获得一层内伤，持有内伤的选手每秒会受到 内伤层数x0.5%最大生命值 的真实伤害",
+          "综合评估条目，该值越高代表着选手能接下越多物理伤害，运算规则通常为：\n最大生命值/(1000-防御力)",
+          "综合评估条目，该值越高代表着选手能接下越多法术伤害，运算规则通常为：\n最大生命值/[1000x(1-法术抗性x0.01)]",
+          "综合评估条目，该值越高代表着选手能接下越多元素损伤，运算规则为：\n(最大生命值/6000)x10",
+          "持有异常抗性时，该异常抗性对应的异常效果无法生效，无法被检测（但通常不会清除此异常效果）",
+          "持有异常抗性时，该异常抗性对应的异常效果无法生效，无法被检测（但通常不会清除此异常效果）",
+          "持有异常抗性时，该异常抗性对应的异常效果无法生效，无法被检测（但通常不会清除此异常效果）",
+          "持有异常抗性时，该异常抗性对应的异常效果无法生效，无法被检测（但通常不会清除此异常效果）",
+          "持有异常抗性时，该异常抗性对应的异常效果无法生效，无法被检测（但通常不会清除此异常效果）",
+          "每局费用平均分成兵种+1份，每兵种分得一份，剩下的一份随机分配给每个兵种得到兵种出击费用\n每个兵种出第一个兵会消耗基础费用，出第二个会消耗基础费用+附加费用，第三个会消耗基础费用+附加费用x2，以此类推\n特别地，如果某一兵种的剩余费用不够继续发兵，则会根据兵种剩余费用和出下一个费用的比例为概率得到随机出击概率",
+        ];
+
+        function hideTooltip() {
+          tooltipEl.classList.remove("visible");
+          if (tooltipTimer) {
+            clearTimeout(tooltipTimer);
+            tooltipTimer = null;
+          }
+          currentHoverTh = null;
+        }
+
+        function showTooltipForTh(th) {
+          var ths = document.querySelectorAll("#dataTable thead th");
+          var index = Array.prototype.indexOf.call(ths, th);
+          if (index < 0 || index >= TOOLTIP_TEXTS.length) {
+            hideTooltip();
+            return;
+          }
+          var text = TOOLTIP_TEXTS[index];
+          if (!text) {
+            hideTooltip();
+            return;
+          }
+          if (tooltipTimer) {
+            clearTimeout(tooltipTimer);
+            tooltipTimer = null;
+          }
+          tooltipEl.textContent = text;
+          var rect = th.getBoundingClientRect();
+          var left = rect.left + window.scrollX;
+          var top = rect.bottom + window.scrollY + 6;
+          var tooltipWidth = tooltipEl.offsetWidth || 200;
+          var tooltipHeight = tooltipEl.offsetHeight || 60;
+          if (left + tooltipWidth > window.innerWidth - 10)
+            left = window.innerWidth - tooltipWidth - 10;
+          if (left < 10) left = 10;
+          if (top + tooltipHeight > window.innerHeight - 10) {
+            top = rect.top + window.scrollY - tooltipHeight - 6;
+            if (top < 10) top = 10;
+          }
+          tooltipEl.style.left = left + "px";
+          tooltipEl.style.top = top + "px";
+          tooltipEl.classList.add("visible");
+          currentHoverTh = th;
+          tooltipTimer = setTimeout(function () {
+            hideTooltip();
+          }, 60000);
+        }
+
+        function handleThMouseEnter(e) {
+          var th = e.target.closest("th");
+          if (!th) return;
+          var ths = document.querySelectorAll("#dataTable thead th");
+          var index = Array.prototype.indexOf.call(ths, th);
+          if (index === ths.length - 1) {
+            hideTooltip();
+            return;
+          }
+          if (currentHoverTh === th) return;
+          hideTooltip();
+          showTooltipForTh(th);
+        }
+
+        function handleThMouseLeave(e) {
+          var th = e.target.closest("th");
+          if (!th) return;
+          hideTooltip();
+        }
+
+        function handleGlobalChange() {
+          if (tooltipEl.classList.contains("visible")) hideTooltip();
+        }
+
+        function initHeaderTooltips() {
+          var thead = document.querySelector("#dataTable thead");
+          if (!thead) return;
+          var isTouch = window.matchMedia && window.matchMedia("(hover: none)").matches;
+          if (!isTouch) {
+            thead.addEventListener("mouseenter", handleThMouseEnter, true);
+            thead.addEventListener("mouseleave", handleThMouseLeave, true);
+          }
+          window.addEventListener("scroll", handleGlobalChange, true);
+          window.addEventListener("resize", handleGlobalChange);
+          if (isTouch) {
+            thead.addEventListener("click", function (e) {
+              var th = e.target.closest("th");
+              if (!th) return;
+              if (currentHoverTh === th) {
+                hideTooltip();
+                return;
+              }
+              var ths = document.querySelectorAll("#dataTable thead th");
+              var index = Array.prototype.indexOf.call(ths, th);
+              if (index === ths.length - 1) {
+                hideTooltip();
+                return;
+              }
+              showTooltipForTh(th);
+            });
+            document.addEventListener("click", function (e) {
+              if (e.target.closest("#dataTable thead")) return;
+              hideTooltip();
+            });
+          }
+        }
+
+        var debounceTimer = null;
+        function bindEvents() {
+          var searchInput = document.getElementById("searchKeyword");
+          var clearBtn = document.getElementById("clearSearchBtn");
+          var filterInputs = [
+            "dmgTypeFilter",
+            "levelFilter",
+            "resistTypeSelect",
+            "resistValueSelect",
+            "sortBySelect",
+            "sortOrderSelect",
+          ];
+          searchInput.addEventListener("input", function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFiltersAndSort, 20);
+          });
+          filterInputs.forEach(function (id) {
+            document
+              .getElementById(id)
+              .addEventListener("change", applyFiltersAndSort);
+          });
+          clearBtn.addEventListener("click", resetAllFilters);
+          document.getElementById("backToDirBtn").addEventListener("click", hideDetail);
+        }
+
+        function bindHomeButton() {
+          document.querySelectorAll(".home-btn").forEach(function(btn) {
+            btn.addEventListener("click", function (e) {
+              e.preventDefault();
+              goHome();
+            });
+          });
+        }
+
+        function showDetail(player) {
+          document.querySelector(".page-wrapper").style.display = "none";
+          document.getElementById("detailView").style.display = "block";
+
+          document.getElementById("detailPlayerName").textContent = player.name;
+          document.getElementById("detailIcon").src = player.icon;
+          document.getElementById("detailIcon").alt = player.name;
+          document.getElementById("detailNumber").textContent = player.number || "";
+          document.getElementById("detailLevel").innerHTML = getLevelBadgeHtml(player.level);
+          document.getElementById("detailDmgType").innerHTML = getDmgBadgeHtml(player.dmgType);
+          document.getElementById("detailNickname").textContent =
+            player.nickname && player.nickname.trim() !== "" ? player.nickname : "暂无";
+          document.getElementById("detailAbility").innerHTML =
+            player.ability && player.ability.trim() !== "" && player.ability.trim() !== "无"
+              ? player.ability : "无特殊天赋";
+          document.getElementById("detailDesc").textContent =
+            player.description && player.description.trim() !== ""
+              ? player.description : "暂无简介";
+
+          document.getElementById("dHp").textContent = player.hp;
+          document.getElementById("dAtk").textContent = player.atk;
+          document.getElementById("dDef").textContent = player.def;
+          document.getElementById("dMres").textContent = player.mres;
+          document.getElementById("dInterval").textContent = player.interval;
+          document.getElementById("dRange").textContent = player.range;
+          document.getElementById("dSpeed").textContent = player.speed;
+          document.getElementById("dDph").textContent = player.dph;
+          document.getElementById("dDps").textContent = player.dps;
+          document.getElementById("dBurnDps").textContent = player.burnDps;
+          document.getElementById("dPhysResist").textContent = player.physResist;
+          document.getElementById("dMagicResist").textContent = player.magicResist;
+          document.getElementById("dDmgResist").textContent = player.dmgResist;
+          document.getElementById("dSilence").innerHTML = getResistHtml(player.silence);
+          document.getElementById("dStun").innerHTML = getResistHtml(player.stun);
+          document.getElementById("dFrozen").innerHTML = getResistHtml(player.frozen);
+          document.getElementById("dDisarmedCombat").innerHTML = getResistHtml(player.disarmedCombat);
+          document.getElementById("dPalsy").innerHTML = getResistHtml(player.palsy);
+          document.getElementById("dCost").textContent = player.cost;
+        }
+
+        function hideDetail() {
+          document.getElementById("detailView").style.display = "none";
+          document.querySelector(".page-wrapper").style.display = "block";
+        }
+        function goHome() {
+          closeAllPopups();
+          resetAllFilters();
+          if (document.getElementById("detailView").style.display === "block") {
+            hideDetail();
+          }
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function init() {
+          renderTableFromData(playersData);
+          bindEvents();
+          bindHomeButton();
+          initHeaderTooltips();
+        }
+        init();
+      })();
+    </script>
+  </body>
+</html>

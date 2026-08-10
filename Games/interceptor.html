@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>一夫当关 - 竖版飞行射击</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a1a;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            overflow: hidden;
+        }
+        #gameContainer { position: relative; width: 400px; height: 600px; }
+        canvas {
+            display: block;
+            background: linear-gradient(180deg, #0a0a2e 0%, #1a1a3e 50%, #0a0a2e 100%);
+            border: 2px solid #333; border-radius: 8px;
+        }
+        #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        #hud { position: absolute; top: 5px; left: 5px; right: 5px; display: flex; justify-content: space-between; align-items: flex-start; color: #fff; font-size: 11px; text-shadow: 0 0 5px #00f; gap: 3px; flex-wrap: wrap; }
+        .hud-item { background: rgba(0,0,50,0.8); padding: 3px 6px; border-radius: 4px; border: 1px solid #444; }
+        .health-bar { width: 70px; height: 5px; background: #333; border-radius: 3px; overflow: hidden; }
+        .health-fill { height: 100%; background: linear-gradient(90deg, #f00, #ff0); transition: width 0.3s; }
+        .capacity-bar { width: 70px; height: 5px; background: #333; border-radius: 3px; overflow: hidden; }
+        .capacity-fill { height: 100%; background: linear-gradient(90deg, #00f, #0ff); transition: width 0.3s; }
+        .skill-indicator { display: flex; gap: 2px; margin-top: 2px; }
+        .skill-dot { width: 7px; height: 7px; border-radius: 50%; background: #333; border: 1px solid #555; }
+        .skill-dot.active { background: #0f0; box-shadow: 0 0 4px #0f0; }
+        .dash-cd { width: 50px; height: 5px; background: #333; border-radius: 3px; overflow: hidden; margin-top: 2px; }
+        .dash-fill { height: 100%; background: linear-gradient(90deg, #f0f, #ff0); transition: width 0.1s; }
+        #startScreen, #gameOverScreen, #winScreen, #pauseScreen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(0,0,20,0.95); color: #fff; pointer-events: auto;
+        }
+        #gameOverScreen, #winScreen, #pauseScreen { display: none; }
+        #pauseScreen .btn + .btn { margin-top: 10px; }
+        .pause-btn {
+            display: none;
+            position: absolute; top: 8px; right: 8px; z-index: 10;
+            width: 34px; height: 34px; border-radius: 6px;
+            background: rgba(0,0,60,0.7); color: #fff; font-size: 16px;
+            border: 1px solid #555; cursor: pointer; pointer-events: auto;
+        }
+        @media (pointer: coarse) { .pause-btn { display: block; } }
+        #winScreen h2 { color: #0ff; }
+        .difficulty-select { display: flex; gap: 6px; margin-bottom: 15px; }
+        .diff-btn {
+            padding: 8px 14px; font-size: 13px;
+            background: #222; color: #ccc;
+            border: 1px solid #444; border-radius: 6px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .diff-btn.selected {
+            background: linear-gradient(180deg, #ff6600, #cc4400);
+            color: #fff; border-color: #ff6600; box-shadow: 0 0 10px #ff6600;
+        }
+        h1 { font-size: 26px; margin-bottom: 12px; color: #ff6600; text-shadow: 0 0 15px #ff6600; }
+        h2 { font-size: 22px; margin-bottom: 12px; color: #f00; }
+        .subtitle { font-size: 12px; color: #888; margin-bottom: 15px; }
+        .instructions { font-size: 11px; color: #aaa; margin-bottom: 12px; text-align: center; line-height: 1.7; }
+        .btn {
+            padding: 10px 25px; font-size: 15px;
+            background: linear-gradient(180deg, #ff6600, #cc4400);
+            border: none; border-radius: 6px; color: #fff; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s; pointer-events: auto;
+        }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 0 15px #ff6600; }
+        .final-score { font-size: 18px; color: #ff0; margin: 12px 0; }
+        .subtitle-msg {
+            position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);
+            color: #ffaa00; font-size: 14px; font-weight: bold; text-shadow: 0 0 8px #aa4400;
+            white-space: nowrap; pointer-events: none; z-index: 5;
+        }
+        #manualPanel {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,20,0.97); color: #fff; pointer-events: auto;
+            z-index: 15;
+            display: flex; flex-direction: column;
+            padding: 14px;
+            overflow: hidden;
+        }
+        .manual-content {
+            flex: 1; overflow-y: auto;
+            font-size: 12px; line-height: 1.7;
+        }
+        .manual-content h2 { font-size: 17px; color: #ff6600; margin-bottom: 10px; text-align: center; }
+        .manual-content h3 { font-size: 14px; color: #0ff; margin: 12px 0 6px; }
+        .manual-content ul { margin: 0 0 8px 18px; }
+        .manual-content li { margin: 2px 0; }
+        .manual-content ul ul { margin-left: 16px; }
+        @media (max-width: 500px) {
+            #gameContainer {
+                width: min(100vw, calc(100vh * 2 / 3));
+                height: min(100vh, calc(100vw * 3 / 2));
+            }
+            canvas { width: 100%; height: 100%; border: none; border-radius: 0; touch-action: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+        <div id="ui">
+            <div id="hud">
+                <div class="hud-item">
+                    <div>分数<span id="endlessTag" style="display:none;color:#ff0;margin-left:4px;">·无尽</span></div>
+                    <div id="score">0</div>
+                </div>
+                <div class="hud-item">
+                    <div>运输机</div>
+                    <div id="killCount">0</div>
+                </div>
+                <div class="hud-item">
+                    <div>BOSS血量</div>
+                    <div class="health-bar"><div class="health-fill" id="healthBar"></div></div>
+                    <div id="healthText" style="font-size:9px;color:#aaa;"></div>
+                </div>
+                <div class="hud-item">
+                    <div>敌容量</div>
+                    <div class="capacity-bar"><div class="capacity-fill" id="bossCapBar"></div></div>
+                    <div style="display:flex;justify-content:space-between;font-size:8px;color:#aaa;">
+                        <span id="bossCapText">0/3</span>
+                        <span id="bossMaxCapText">上限:3</span>
+                    </div>
+                </div>
+                <div class="hud-item">
+                    <div>僚机容量</div>
+                    <div class="capacity-bar"><div class="capacity-fill" id="wingCapBar"></div></div>
+                    <div style="display:flex;justify-content:space-between;font-size:8px;color:#aaa;">
+                        <span id="wingCapText">0/3</span>
+                        <span id="wingMaxCapText">上限:3</span>
+                    </div>
+                    <div style="font-size:8px;color:#aaa;">后备:<span id="wingReserveText">0</span> 架</div>
+                </div>
+                <div class="hud-item">
+                    <div>技能</div>
+                    <div class="skill-indicator">
+                        <div class="skill-dot" id="skillSpread" title="散弹"></div>
+                        <div class="skill-dot" id="skillRapid" title="加速"></div>
+                        <div class="skill-dot" id="skillHoming" title="追踪"></div>
+                        <div class="skill-dot" id="skillDash" title="冲锋"></div>
+                        <div class="skill-dot" id="skillUltimate" title="毁灭"></div>
+                    </div>
+                    <div class="dash-cd"><div class="dash-fill" id="dashBar"></div></div>
+                    <div style="font-size:8px;color:#aaa;">冲锋[W]</div>
+                </div>
+                <div class="hud-item" id="transportHud" style="display:none;">
+                    <div>运输机</div>
+                    <div id="transportStatus" style="font-size:9px;color:#ff0;">出现中</div>
+                    <div class="health-bar"><div class="health-fill" id="transportBar" style="background:linear-gradient(90deg,#f0f,#ff0);"></div></div>
+                </div>
+            </div>
+            <div id="startScreen">
+                <h1>一夫当关</h1>
+                <p class="subtitle">与常规的飞行射击游戏不同，这次换你当Boss了！</p>
+                <div class="instructions">
+                    <p>目标：拦截并击毁所有敌方攻击机</p>
+                    <p>← → 移动 | 空格 射击 | W 冲锋(解锁后)</p>
+                    <p>敌机会停留在屏幕下方向上射击，小心躲避！</p>
+                    <p>Boss血量降至0时进入濒死状态，僚机将为你承受伤害</p>
+                    <p>注意：运输机会运送增益信标给敌机，优先击毁运输机！</p>
+                </div>
+                <div class="difficulty-select">
+                    <button class="diff-btn" data-diff="easy">简单</button>
+                    <button class="diff-btn selected" data-diff="normal">普通</button>
+                    <button class="diff-btn" data-diff="hard">困难</button>
+                    <button class="diff-btn" data-diff="crazy">疯狂</button>
+                    <button class="diff-btn" data-diff="endless">无尽</button>
+                </div>
+                <button class="btn" id="startBtn">开始任务</button>
+                <button class="btn manual-btn" id="manualOpenBtn" style="margin-top:10px;background:linear-gradient(180deg,#3366cc,#224488);">游戏说明书</button>
+            </div>
+            <div id="gameOverScreen">
+                <h2>任务失败</h2>
+                <p>你的拦截机被击毁了</p>
+                <div class="final-score">最终分数: <span id="finalScore">0</span></div>
+                <button class="btn" id="restartBtn">重新开始</button>
+            </div>
+            <div id="winScreen">
+                <h2>任务完成</h2>
+                <p>所有敌方攻击机已被拦截</p>
+                <div class="final-score">最终分数: <span id="finalWinScore">0</span></div>
+                <button class="btn" id="winRestartBtn">再来一局</button>
+            </div>
+            <div id="pauseScreen">
+                <h2 style="color:#ff0;">已暂停</h2>
+                <button class="btn" id="resumeBtn">继续</button>
+                <button class="btn" id="pauseMenuBtn">返回主菜单</button>
+            </div>
+            <button id="pauseBtn" class="pause-btn">⏸</button>
+            <div id="subtitle" class="subtitle-msg" style="display:none;"></div>
+            <div id="manualPanel" style="display:none;">
+                <button class="btn" id="manualCloseBtn" style="margin-bottom:10px;background:linear-gradient(180deg,#cc4400,#992200);">收起说明书</button>
+                <div class="manual-content">
+                    <h2>一夫当关 · 游玩说明书</h2>
+
+                    <h3>一、我方部队</h3>
+                    <ul>
+                        <li><b>长机（BOSS拦截机）</b>：位于屏幕顶部向下射击，生命值 500。随血量下降逐级解锁技能：
+                            <ul>
+                                <li>血量 ≤80%：散弹（3 向射击）</li>
+                                <li>血量 ≤60%：速射（射速提升）＋ 2 架随机僚机</li>
+                                <li>血量 ≤40%：追踪弹 ＋ 冲锋 ＋ 2 架随机僚机</li>
+                                <li>血量 ≤20%：毁灭模式 ＋ 2 架随机僚机 ＋ 2 僚机容量上限（血量 ≤20% 时进入，恢复至 >40% 退出，滞回区间内保持当前状态；模式下以 8 帧冷却从两侧机翼尖端各发射 1 发追踪弹、以 12 帧冷却发射 5 连发直射弹；首次进入另使敌容量上限随机 +1/+2，再次进入仅补充 2 架随机僚机且不提升容量上限）</li>
+                            </ul>
+                            <div style="margin-top:4px;">技能解锁代价：每解锁一个技能档位（点亮技能指示灯，80%/60%/40% 各一次，20% 毁灭模式仅首次进入），敌容量上限随机 +1 或 +2（上限 15）。冲锋与追踪弹同属 40% 档，只计算一次。</div>
+                        </li>
+                        <li><b>冲锋（W）</b>：下潜冲入敌群撞毁敌机并回复生命，冷却 15 秒。</li>
+                        <li><b>濒死</b>：生命归 0 时进入濒死，僚机代为承伤；恢复至最大生命的 1/4（125）脱离；进入时 10 秒禁疗。</li>
+                        <li><b>僚机</b>：驻场上限 6 架，超出进入后备，驻场减员后 5 秒补位。
+                            <ul>
+                                <li>普通僚机：生命 15，占僚机容量 1，火力型。</li>
+                                <li>治疗僚机：生命 50，占僚机容量 2，持续向长机发射治疗弹（+10）。</li>
+                                <li>血量 60%/40%/20% 奖励的随机僚机：普通 60%、治疗 40%。</li>
+                                <li>容量超限后，驻场僚机会拦下敌方子弹并承受全额伤害；受击存活后获得 3 秒无敌；首次超限时屏幕中央警示 10 秒。</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h3>二、敌方机型（5 种）</h3>
+                    <ul>
+                        <li><b>普通攻击机</b>：生命 2、伤害 5、占敌容量 1、性能均衡。困难/疯狂档下，入场 10 秒仍未获得任何信标增益时会以 2 倍移速向上突进逃离（可被击毁/撞毁，且会横向避让长机）；存活离场时扣除玩家得分（击毁得分的 2 倍）并计入运输机迫近计数。</li>
+                        <li><b>快速攻击机</b>：生命 2、伤害 8、占敌容量 2、移速射速快。</li>
+                        <li><b>重型攻击机</b>：生命 6、伤害 25、占敌容量 3、慢速重火力。</li>
+                        <li><b>电磁切割器</b>：生命 50、占敌容量 4，机身环绕电弧环，不进行远程攻击；破甲前会主动贴近长机近身切割，并主动躲避非追踪子弹，电弧环接触长机时每 0.5 秒造成 2 点伤害（电弧环每 5 秒失效 1 秒，每架节奏独立）。首次即将被击毁时不死亡，而是失去电弧环（同时失去携带的信标增益）、生命恢复至初始上限然后退回屏幕底部（期间无敌），重生后解锁重型弹远程攻击（射速同普通攻击机）。注意：电磁切割器仅在敌容量上限提升到 4 后才会出现。</li>
+                        <li><b>运输机</b>：血量较高、不攻击、不占敌容量。运输机迫近计数（逃逸的普通机与被击毁的非运输机计入，冲锋/机体撞毁不计入）累计至 20 时出现（超出 20 的部分计入下一波；有冷却；疯狂档第 3 波起 2 架同出）；达到目标分数后停止累计。携带一枚随机信标；被击毁→掉落信标，逃脱→对全场敌机施加增益（疯狂档更强）并召唤 1 架替代运输机（该行为不受目标分数暂停影响）。</li>
+                    </ul>
+
+                    <h3>三、核心机制</h3>
+                    <ul>
+                        <li><b>难度</b>：简单/普通/困难/疯狂，胜利分 500/500/1500/2000；简单档敌机基础血量减半；疯狂档运输机逃脱惩罚最重。</li>
+                        <li><b>信标与增益</b>：信标缓慢下落、敌机会追食；敌机获得增益的同时获得短暂无敌（追食信标 10 秒，运输机逃逸施加时 2 秒、疯狂档 5 秒）；增益包括生命（血量×50＋体型变大）、恢复（血量×10＋持续回血）、火力（血量×5＋伤害翻倍）、愤怒（血量×5＋射速翻倍＋三向弹）、增援（敌容量＋1）；信标落空有 90% 概率奖励一架僚机（不提升僚机容量上限）。</li>
+                        <li><b>运输机期间刷怪</b>：简单不刷 / 普通半速 / 困难正常 / 疯狂双倍，且困难/疯狂敌容量临时翻倍（运输机逃脱或击毁后复原）。</li>
+                        <li><b>胜利判定</b>：达到目标分数后，停止运输机自然刷新与迫近计数累计，需清除场上全部运输机/信标/持有增益的敌机，1 秒后结算胜利；若得分重新低于目标分数（如敌机逃逸扣分），则恢复自然刷新与计数累计。</li>
+                        <li><b>无尽模式</b>：以简单难度开始，每结束一个运输机波次难度提升一档（最高疯狂）；长机与僚机最大生命翻倍；濒死只需恢复至最大生命的 1/8 即可脱离；无胜利条件，坚持到被击毁为止。</li>
+                    </ul>
+
+                    <h3>四、双端操作</h3>
+                    <ul>
+                        <li><b>PC</b>：←/→ 或 A/D 移动；空格 射击；W 或 ↑ 冲锋；P 暂停；回车 开始/重开。</li>
+                        <li><b>移动端</b>：第一指按住移动（相对屏幕中线转向）；第二指按住射击；双击（快速两次点触）冲锋；右上角按钮暂停。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const winScreen = document.getElementById('winScreen');
+    const pauseScreen = document.getElementById('pauseScreen');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const startBtn = document.getElementById('startBtn');
+    const manualPanel = document.getElementById('manualPanel');
+    const manualOpenBtn = document.getElementById('manualOpenBtn');
+    const manualCloseBtn = document.getElementById('manualCloseBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const winRestartBtn = document.getElementById('winRestartBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const pauseMenuBtn = document.getElementById('pauseMenuBtn');
+    const diffBtns = document.querySelectorAll('.diff-btn');
+    const scoreDisplay = document.getElementById('score');
+    const endlessTag = document.getElementById('endlessTag');
+    const killCountDisplay = document.getElementById('killCount');
+    const healthBar = document.getElementById('healthBar');
+    const healthText = document.getElementById('healthText');
+    const bossCapBar = document.getElementById('bossCapBar');
+    const bossCapText = document.getElementById('bossCapText');
+    const bossMaxCapText = document.getElementById('bossMaxCapText');
+    const wingCapBar = document.getElementById('wingCapBar');
+    const wingCapText = document.getElementById('wingCapText');
+    const wingMaxCapText = document.getElementById('wingMaxCapText');
+    const wingReserveText = document.getElementById('wingReserveText');
+    const dashBar = document.getElementById('dashBar');
+    const subtitle = document.getElementById('subtitle');
+    const transportHud = document.getElementById('transportHud');
+    const transportStatus = document.getElementById('transportStatus');
+    const transportBar = document.getElementById('transportBar');
+    const skillDots = {
+        spread: document.getElementById('skillSpread'),
+        rapid: document.getElementById('skillRapid'),
+        homing: document.getElementById('skillHoming'),
+        dash: document.getElementById('skillDash'),
+        ultimate: document.getElementById('skillUltimate')
+    };
+
+    let gameState = 'start';
+    let score = 0;
+    let lastTime = 0, deltaTime = 0;
+    let starField = [];
+    const ENEMY_SPAWN_DELAY = 300;
+    const DIFFICULTIES = {
+        easy:   { winScore: 500,  halfEnemyHp: true,  spawnRate: 0,   transportCapMult: 1, spawnDelay: 300, escape: { invincible: 120, hpMult: 2,   reinforcement: 2 } },
+        normal: { winScore: 500,  halfEnemyHp: false, spawnRate: 0.5, transportCapMult: 1, spawnDelay: 150, escape: { invincible: 120, hpMult: 2,   reinforcement: 2 } },
+        hard:   { winScore: 1500, halfEnemyHp: false, spawnRate: 1,   transportCapMult: 2, spawnDelay: 90,  escape: { invincible: 120, hpMult: 2,   reinforcement: 2 } },
+        crazy:  { winScore: 2000, halfEnemyHp: false, spawnRate: 2,   transportCapMult: 2, spawnDelay: 60,  escape: { invincible: 300, hpMult: 'full', reinforcement: 'existing' } }
+    };
+    const MAX_BOSS_CAPACITY = 15;
+    const TRANSPORT_COOLDOWN = 600;
+    let difficulty = 'normal';
+    let endlessMode = false;
+    let waveActive = false;
+
+    function nextDifficulty(d) {
+        if (d === 'easy') return 'normal';
+        if (d === 'normal') return 'hard';
+        if (d === 'hard') return 'crazy';
+        return 'crazy';
+    }
+
+    function wingmanHp(base) {
+        return endlessMode ? base * 2 : base;
+    }
+
+    const player = {
+        x: 200, y: 100, width: 120, height: 90,
+        speed: 5, shootCooldown: 0, shootRate: 12, invincible: 0,
+        ultimateShootCooldown: 0,
+        maxHP: 500, hp: 500
+    };
+
+    let bossMaxCapacity = 3, bossCurrentCapacity = 0;
+    let wingmanMaxCapacity = 3, wingmanCurrentCapacity = 0;
+    const unlockedSkills = {
+        spreadShot: false, rapidFire: false,
+        homingMissile: false, dashAttack: false, ultimateMode: false
+    };
+    let ultimateActive = false;
+
+    let isDowned = false, healBlockTimer = 0;
+    let subtitleTimer = 0;
+    let winPending = false, winDelayTimer = 0;
+    let dashCooldown = 0, dashMaxCooldown = 900, isDashing = false, dashTimer = 0;
+    let dashPhase = 'dive', dashHoldTimer = 0;
+    let ultimateInvTimer = 0;
+    let bullets = [], enemyBullets = [], enemies = [], explosions = [];
+    let wingmen = [], wingmanBullets = [], healingBullets = [];
+    let reserveWingmen = [];
+    let reserveTimer = 0;
+    const ACTIVE_WINGMAN_LIMIT = 6;
+    let spawnDelayTimer = 0, spawnDelayActive = false;
+    let spawnAccumulator = 0;
+    let transportCooldown = 0;
+    let transports = [];
+    let transportSpawnCount = 0;
+    let transportSpawnDisabled = false;
+    let escapeRefillDone = false;
+
+    let beacons = [];
+    let enemyKillCount = 0;
+    let chasingBeaconCount = 0;
+    let overflowWarned = false;
+    const BEACON_TYPES = ['life', 'recovery', 'firepower', 'rage', 'reinforcement'];
+    const BEACON_SPEED = 0.8;
+    const BEACON_COLORS = { life: '#ff4444', recovery: '#44ff44', firepower: '#ff8800', rage: '#ffff00', reinforcement: '#ff44ff' };
+    const BEACON_NAMES = { life: '生命', recovery: '恢复', firepower: '火力', rage: '愤怒', reinforcement: '增援' };
+
+    const keys = { left: false, right: false, shoot: false };
+    const NORMAL_X = [-65, 65, -110, 110, -150, 150];
+    const NORMAL_Y = [20, 20, 20, 20, 35, 35];
+    const HEALER_X = [-45, 45, -85, 85, -125, 125];
+    const HEALER_Y = [40, 40, 40, 40, 55, 55];
+
+    function initStarField() {
+        starField = [];
+        for (let i = 0; i < 80; i++) {
+            starField.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5 + 0.5,
+                speed: Math.random() * 1.5 + 0.5,
+                alpha: 0.3 + Math.random() * 0.4
+            });
+        }
+    }
+
+    function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function getCapacity(type) {
+        if (type === 'arc') return 4;
+        if (type === 'heavy') return 3;
+        if (type === 'fast') return 2;
+        return 1;
+    }
+
+    function canSpawnEnemy() {
+        return !spawnDelayActive || transports.length > 0;
+    }
+
+    function effectiveBossMaxCapacity() {
+        if (transports.length > 0 && DIFFICULTIES[difficulty].transportCapMult > 1) {
+            return Math.min(bossMaxCapacity * 2, 30);
+        }
+        return bossMaxCapacity;
+    }
+
+    function trySpawnEnemy() {
+        if (!canSpawnEnemy()) return;
+        const type = Math.random();
+        let enemy = {
+            x: Math.random() * (canvas.width - 60) + 30,
+            y: canvas.height + 40,
+            targetY: canvas.height * 0.72 + Math.random() * canvas.height * 0.15,
+            width: 36, height: 32,
+            speed: 2 + Math.random() * 2,
+            health: 2, type: 'normal',
+            shootTimer: Math.random() * 60 + 40,
+            shootRate: 70,
+            moveDir: Math.random() > 0.5 ? 1 : -1,
+            moveTimer: 0, arrived: false,
+            isTransport: false,
+            chasingBeacon: null,
+            buff: null,
+            hasLifeBuff: false,
+            hasRecoveryBuff: false,
+            doubledDamage: false,
+            doubledFireRate: false,
+            originalShootRate: 0,
+            lifeBuffConsumed: false,
+            sizeMultiplier: 1,
+            regenTimer: 0,
+            hp: 2, maxHP: 2,
+            invincible: 0,
+            arcBroken: false,
+            arcTickTimer: 0,
+            arcCycle: 0,
+            retreating: false,
+            escapeTimer: 600,
+            escapeDash: false
+        };
+        if (type > 0.92 && bossMaxCapacity >= 4) {
+            enemy.width = 52; enemy.height = 46; enemy.health = 50;
+            enemy.hp = 50; enemy.maxHP = 50;
+            enemy.speed = 4.5; enemy.type = 'arc';
+            enemy.shootRate = 65; enemy.shootTimer = 40;
+            enemy.arcCycle = Math.floor(Math.random() * 300);
+        } else if (type > 0.8) {
+            enemy.width = 48; enemy.height = 42; enemy.health = 6;
+            enemy.hp = 6; enemy.maxHP = 6;
+            enemy.speed *= 0.7; enemy.type = 'heavy';
+            enemy.shootRate = 110; enemy.shootTimer = 80;
+        } else if (type > 0.5) {
+            enemy.width = 30; enemy.height = 28; enemy.health = 2;
+            enemy.hp = 2; enemy.maxHP = 2;
+            enemy.speed *= 1.3; enemy.type = 'fast';
+            enemy.shootRate = 45; enemy.shootTimer = 30;
+        } else {
+            enemy.shootRate = 65;
+        }
+        enemy.originalShootRate = enemy.shootRate;
+        if (DIFFICULTIES[difficulty].halfEnemyHp) {
+            enemy.health = Math.max(1, Math.floor(enemy.health / 2));
+            enemy.maxHP = enemy.health;
+            enemy.hp = enemy.health;
+        }
+        enemy.baseMaxHP = enemy.maxHP;
+        const cap = getCapacity(enemy.type);
+        if (bossCurrentCapacity + cap <= effectiveBossMaxCapacity()) {
+            enemies.push(enemy);
+            bossCurrentCapacity += cap;
+        }
+    }
+
+    function removeEnemy(enemy) {
+        if (enemy.chasingBeacon) {
+            enemy.chasingBeacon = null;
+            chasingBeaconCount = Math.max(0, chasingBeaconCount - 1);
+        }
+        const idx = enemies.indexOf(enemy);
+        if (idx >= 0) {
+            if (!enemy.isTransport) {
+                bossCurrentCapacity -= getCapacity(enemy.type);
+                if (bossCurrentCapacity < 0) bossCurrentCapacity = 0;
+            }
+            enemies.splice(idx, 1);
+            spawnDelayActive = true;
+            spawnDelayTimer = (DIFFICULTIES[difficulty] && DIFFICULTIES[difficulty].spawnDelay) || ENEMY_SPAWN_DELAY;
+        }
+    }
+
+    function createExplosion(x, y, size, color) {
+        const exp = { x, y, size: size || 20, alpha: 1, particles: [] };
+        for (let i = 0; i < 10; i++) {
+            exp.particles.push({
+                x: 0, y: 0,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 0.5) * 8,
+                size: Math.random() * 5 + 2,
+                hue: color !== undefined ? color : (30 + Math.random() * 30)
+            });
+        }
+        explosions.push(exp);
+    }
+
+    function playerShoot() {
+        if (ultimateActive) {
+            if (player.shootCooldown <= 0) {
+                player.shootCooldown = unlockedSkills.rapidFire ? 8 : player.shootRate;
+                for (const side of [-1, 1]) {
+                    bullets.push({
+                        x: player.x + side * player.width * 0.5, y: player.y - player.height * 0.05,
+                        width: 5, height: 12, speed: 10, vx: side * 1.5, isHoming: true
+                    });
+                }
+            }
+            if (player.ultimateShootCooldown <= 0) {
+                player.ultimateShootCooldown = 12;
+                for (let i = -2; i <= 2; i++) {
+                    const angle = i * 0.15;
+                    bullets.push({
+                        x: player.x + i * 10, y: player.y + player.height / 2 - 5,
+                        width: 6, height: 14, speed: 10, vx: Math.sin(angle) * 2, isHoming: false
+                    });
+                }
+            }
+            return;
+        }
+        if (player.shootCooldown > 0) return;
+        const bs = unlockedSkills.rapidFire ? 8 : player.shootRate;
+        player.shootCooldown = bs;
+        if (unlockedSkills.spreadShot) {
+            for (let i = -1; i <= 1; i++) {
+                bullets.push({
+                    x: player.x + i * 18, y: player.y + player.height / 2 - 5,
+                    width: 5, height: 12, speed: 10, vx: i * 1.5, isHoming: unlockedSkills.homingMissile
+                });
+            }
+        } else {
+            bullets.push({
+                x: player.x, y: player.y + player.height / 2 - 5,
+                width: 6, height: 14, speed: 10, vx: 0,
+                isHoming: unlockedSkills.homingMissile
+            });
+        }
+    }
+
+    function wingmanShoot(w) {
+        if (!w.shootReady) return;
+        w.shootReady = false;
+        w.shootCooldown = w.type === 'healer' ? 200 : 50;
+        if (w.type === 'healer') {
+            healingBullets.push({
+                x: w.x, y: w.y - 10,
+                width: 6, height: 6, speed: 8
+            });
+        } else {
+            wingmanBullets.push({
+                x: w.x, y: w.y + 15,
+                width: 4, height: 10, speed: 8
+            });
+        }
+    }
+
+    function getEnemyDamage(enemy) {
+        const base = enemy.type === 'heavy' || enemy.type === 'arc' ? 25 : (enemy.type === 'fast' ? 8 : 5);
+        return enemy.doubledDamage ? base * 2 : base;
+    }
+
+    function enemyShoot(enemy) {
+        if (enemy.isTransport) return;
+        const dmg = getEnemyDamage(enemy);
+        enemyBullets.push({
+            x: enemy.x, y: enemy.y - enemy.height / 2,
+            width: 5, height: 10, speed: 5, vx: 0, damage: dmg
+        });
+        if (enemy.doubledFireRate) {
+            enemyBullets.push({
+                x: enemy.x, y: enemy.y - enemy.height / 2,
+                width: 5, height: 10, speed: 5, vx: 1.5, damage: dmg
+            });
+            enemyBullets.push({
+                x: enemy.x, y: enemy.y - enemy.height / 2,
+                width: 5, height: 10, speed: 5, vx: -1.5, damage: dmg
+            });
+        }
+    }
+
+    function enemyFire(e, delta) {
+        if (e.retreating || (e.type === 'arc' && !e.arcBroken)) return;
+        e.shootTimer -= delta;
+        if (e.shootTimer <= 0 && e.arrived) {
+            enemyShoot(e);
+            e.shootTimer = e.doubledFireRate ? e.originalShootRate / 2 : e.originalShootRate;
+        }
+    }
+
+    function checkCollision(a, b) {
+        const aW = a.width * (a.sizeMultiplier || 1);
+        const aH = a.height * (a.sizeMultiplier || 1);
+        const bW = b.width * (b.sizeMultiplier || 1);
+        const bH = b.height * (b.sizeMultiplier || 1);
+        return Math.abs(a.x - b.x) < (aW + bW) / 2 &&
+               Math.abs(a.y - b.y) < (aH + bH) / 2;
+    }
+
+    function tryUnlockSkill() {
+        const hpPct = (player.hp / player.maxHP) * 100;
+        if (hpPct <= 80 && !unlockedSkills.spreadShot) {
+            unlockedSkills.spreadShot = true;
+            bossMaxCapacity = Math.min(MAX_BOSS_CAPACITY, bossMaxCapacity + (Math.random() > 0.5 ? 2 : 1));
+            skillDots.spread.classList.add('active');
+        }
+        if (hpPct <= 60 && !unlockedSkills.rapidFire) {
+            unlockedSkills.rapidFire = true;
+            bossMaxCapacity = Math.min(MAX_BOSS_CAPACITY, bossMaxCapacity + (Math.random() > 0.5 ? 2 : 1));
+            skillDots.rapid.classList.add('active');
+            wingmanMaxCapacity += 1;
+            addRandomWingman();
+            addRandomWingman();
+        }
+        if (hpPct <= 40 && !unlockedSkills.homingMissile) {
+            unlockedSkills.homingMissile = true;
+            bossMaxCapacity = Math.min(MAX_BOSS_CAPACITY, bossMaxCapacity + (Math.random() > 0.5 ? 2 : 1));
+            wingmanMaxCapacity += Math.random() > 0.5 ? 2 : 1;
+            unlockedSkills.dashAttack = true;
+            skillDots.homing.classList.add('active');
+            skillDots.dash.classList.add('active');
+            addRandomWingman();
+            addRandomWingman();
+        }
+        if (hpPct <= 20 && !unlockedSkills.ultimateMode) {
+            unlockedSkills.ultimateMode = true;
+            ultimateActive = true;
+            bossMaxCapacity = Math.min(MAX_BOSS_CAPACITY, bossMaxCapacity + (Math.random() > 0.5 ? 2 : 1));
+            wingmanMaxCapacity += 2;
+            skillDots.ultimate.classList.add('active');
+            addRandomWingman();
+            addRandomWingman();
+        }
+    }
+
+    function tryToggleUltimateMode() {
+        const hpPct = (player.hp / player.maxHP) * 100;
+        if (ultimateActive) {
+            if (hpPct > 40) {
+                ultimateActive = false;
+                ultimateInvTimer = 0;
+            }
+            return;
+        }
+        if (hpPct <= 20 && unlockedSkills.ultimateMode) {
+            ultimateActive = true;
+            rewardWingman();
+            rewardWingman();
+        }
+    }
+
+    function addWingman(w) {
+        if (wingmen.length < ACTIVE_WINGMAN_LIMIT) wingmen.push(w);
+        else reserveWingmen.push(w);
+    }
+
+    function rewardWingman() {
+        if (Math.random() < 0.4) {
+            addWingman({
+                x: player.x,
+                y: player.y + 40,
+                width: 25, height: 25,
+                hp: wingmanHp(50), maxHP: wingmanHp(50), type: 'healer',
+                shootCooldown: 0, shootReady: true,
+                invincible: 0,
+                capacityCost: 2
+            });
+            wingmanCurrentCapacity += 2;
+        } else {
+            addWingman({
+                x: player.x + (Math.random() < 0.5 ? -70 : 70),
+                y: player.y + 20,
+                width: 25, height: 20,
+                hp: wingmanHp(15), maxHP: wingmanHp(15), type: 'normal',
+                shootCooldown: 30, shootReady: true,
+                invincible: 0,
+                capacityCost: 1
+            });
+            wingmanCurrentCapacity += 1;
+        }
+    }
+
+    function addRandomWingman() {
+        const type = Math.random() < 0.4 ? 'healer' : 'normal';
+        const cost = type === 'healer' ? 2 : 1;
+        if (wingmanCurrentCapacity + cost > wingmanMaxCapacity) {
+            wingmanMaxCapacity = wingmanCurrentCapacity + cost;
+        }
+        if (type === 'healer') {
+            addWingman({
+                x: player.x,
+                y: player.y + 40,
+                width: 25, height: 25,
+                hp: wingmanHp(50), maxHP: wingmanHp(50), type: 'healer',
+                shootCooldown: 0, shootReady: true,
+                invincible: 0,
+                capacityCost: 2
+            });
+            wingmanCurrentCapacity += 2;
+        } else {
+            addWingman({
+                x: player.x + (Math.random() < 0.5 ? -70 : 70),
+                y: player.y + 20,
+                width: 25, height: 20,
+                hp: wingmanHp(15), maxHP: wingmanHp(15), type: 'normal',
+                shootCooldown: 30, shootReady: true,
+                invincible: 0,
+                capacityCost: 1
+            });
+            wingmanCurrentCapacity += 1;
+        }
+    }
+
+    function triggerDash() {
+        if (!unlockedSkills.dashAttack || dashCooldown > 0 || isDashing) return;
+        isDashing = true;
+        dashPhase = 'dive';
+        dashHoldTimer = 30;
+        dashTimer = 180;
+        dashCooldown = dashMaxCooldown;
+        player.invincible = Math.max(player.invincible, 90);
+    }
+
+    function enterDownedState() {
+        if (isDowned) return;
+        isDowned = true;
+        healBlockTimer = 600;
+        player.invincible = Math.max(player.invincible, 60);
+    }
+
+    function damagePlayer(dmg) {
+        if (player.invincible > 0 || ultimateInvTimer > 0) return;
+        if (isDowned) {
+            let remainingDmg = dmg;
+            let shieldBroken = false;
+            for (let i = wingmen.length - 1; i >= 0; i--) {
+                if (remainingDmg <= 0) break;
+                const wingDmg = Math.min(remainingDmg, wingmen[i].hp);
+                wingmen[i].hp -= wingDmg;
+                remainingDmg -= wingDmg;
+                if (wingmen[i].hp <= 0) {
+                    createExplosion(wingmen[i].x, wingmen[i].y, 25, 200);
+                    wingmanCurrentCapacity -= wingmen[i].capacityCost;
+                    if (wingmanCurrentCapacity < 0) wingmanCurrentCapacity = 0;
+                    wingmen.splice(i, 1);
+                    if (ultimateActive) {
+                        ultimateInvTimer = 180;
+                        player.invincible = 180;
+                        shieldBroken = true;
+                    }
+                }
+            }
+            if (remainingDmg > 0 && !shieldBroken) {
+                player.hp -= remainingDmg;
+                if (player.hp <= 0) gameOver();
+            }
+        } else {
+            player.hp -= dmg;
+            player.invincible = 20;
+            createExplosion(player.x, player.y, 15, 10);
+            if (player.hp <= 0) {
+                player.hp = 0;
+                enterDownedState();
+            }
+        }
+    }
+
+    function showSubtitle(text, frames) {
+        subtitle.textContent = text;
+        subtitleTimer = frames;
+        subtitle.style.display = 'block';
+    }
+
+    function hideSubtitle() {
+        subtitle.style.display = 'none';
+    }
+
+    function hasResidualThreat() {
+        if (transports.length > 0) return true;
+        if (beacons.length > 0) return true;
+        for (const e of enemies) {
+            if (e.hasLifeBuff || e.hasRecoveryBuff || e.doubledDamage || e.doubledFireRate) return true;
+        }
+        return false;
+    }
+
+    function healPlayer(amount) {
+        if (healBlockTimer > 0) return;
+        player.hp = Math.min(player.maxHP, player.hp + amount);
+        if (isDowned && player.hp >= player.maxHP * (endlessMode ? 0.125 : 0.25)) {
+            isDowned = false;
+        }
+    }
+
+    function trySpawnTransport(force) {
+        if (transports.length > 0) return;
+        if (!force) {
+            if (transportCooldown > 0) return;
+            if (transportSpawnDisabled) return;
+        }
+        const double = difficulty === 'crazy' && transportSpawnCount >= 2;
+        transportSpawnCount++;
+        if (transportSpawnCount === 1) showSubtitle('运输机出现！优先击毁运输机！', 600);
+        const count = double ? 2 : 1;
+        escapeRefillDone = false;
+        waveActive = true;
+        for (let i = 0; i < count; i++) {
+            const hp = double
+                ? Math.max(9, Math.floor(bossCurrentCapacity * 3))
+                : Math.max(18, bossCurrentCapacity * 6);
+            const t = {
+                x: count === 2 ? canvas.width / 2 + (i === 0 ? -80 : 80) : canvas.width / 2,
+                y: canvas.height + 50,
+                width: 60, height: 50,
+                hp: hp, maxHP: hp,
+                speed: count === 2 ? 1.5 + i * 0.3 : 1.5,
+                buffType: BEACON_TYPES[Math.floor(Math.random() * BEACON_TYPES.length)],
+                isTransport: true,
+                arrived: false
+            };
+            transports.push(t);
+            enemies.push(t);
+        }
+        if (!endlessMode && score >= DIFFICULTIES[difficulty].winScore) transportSpawnDisabled = true;
+        updateTransportHud();
+    }
+
+    function createBeacon(x, y, type) {
+        beacons.push({
+            x: x, y: y,
+            width: 18, height: 18,
+            type: type,
+            speed: BEACON_SPEED,
+            driftTimer: 0,
+            driftDir: 0,
+            driftCooldown: Math.random() * 120 + 60
+        });
+    }
+
+    function applyBeaconEffect(enemy, beaconType, scaled) {
+        const esc = DIFFICULTIES[difficulty].escape;
+        enemy.invincible = scaled ? esc.invincible : 600;
+        switch (beaconType) {
+            case 'life':
+                enemy.hasLifeBuff = true;
+                enemy.lifeBuffConsumed = false;
+                enemy.buff = 'life';
+                enemy.targetY = canvas.height * 0.78;
+                if (enemy.arrived) enemy.arrived = false;
+                break;
+            case 'recovery':
+                if (!enemy.hasRecoveryBuff) {
+                    enemy.hasRecoveryBuff = true;
+                    const mult = scaled ? (esc.hpMult === 'full' ? 10 : esc.hpMult) : 10;
+                    enemy.health = enemy.health * mult;
+                    enemy.maxHP = enemy.maxHP * mult;
+                    enemy.hp = enemy.maxHP;
+                    enemy.buff = 'recovery';
+                }
+                break;
+            case 'firepower':
+                if (!enemy.doubledDamage) {
+                    enemy.doubledDamage = true;
+                    const mult = scaled ? (esc.hpMult === 'full' ? 5 : esc.hpMult) : 5;
+                    enemy.health = enemy.health * mult;
+                    enemy.maxHP = enemy.maxHP * mult;
+                    enemy.hp = enemy.maxHP;
+                    enemy.buff = 'firepower';
+                }
+                break;
+            case 'rage':
+                if (!enemy.doubledFireRate) {
+                    enemy.doubledFireRate = true;
+                    enemy.shootRate = enemy.originalShootRate / 2;
+                    const mult = scaled ? (esc.hpMult === 'full' ? 5 : esc.hpMult) : 5;
+                    enemy.health = enemy.health * mult;
+                    enemy.maxHP = enemy.maxHP * mult;
+                    enemy.hp = enemy.maxHP;
+                    enemy.buff = 'rage';
+                }
+                break;
+            case 'reinforcement':
+                bossMaxCapacity = Math.min(MAX_BOSS_CAPACITY, bossMaxCapacity + 1);
+                enemy.buff = 'reinforcement';
+                break;
+        }
+    }
+
+    function updateTransportHud() {
+        if (transports.length === 0) { transportHud.style.display = 'none'; return; }
+        transportHud.style.display = 'block';
+        const names = transports.map(t => BEACON_NAMES[t.buffType]);
+        if (transports.length === 1) {
+            transportStatus.textContent = names[0] + '信标';
+        } else if (names.every(n => n === names[0])) {
+            transportStatus.textContent = names[0] + '信标 ×2';
+        } else {
+            transportStatus.textContent = names.join('/') + ' 信标 ×2';
+        }
+        const t = transports[0];
+        transportBar.style.width = (t.hp / t.maxHP * 100) + '%';
+    }
+
+    function destroyTransport(t) {
+        const idx = transports.indexOf(t);
+        if (idx >= 0) transports.splice(idx, 1);
+        transportCooldown = TRANSPORT_COOLDOWN;
+        updateTransportHud();
+        if (endlessMode && waveActive && transports.length === 0) {
+            waveActive = false;
+            difficulty = nextDifficulty(difficulty);
+        }
+    }
+
+    function destroyTransportKilled(t) {
+        createExplosion(t.x, t.y, 50, 300);
+        createBeacon(t.x, t.y, t.buffType);
+        score += 50;
+        removeEnemy(t);
+        destroyTransport(t);
+    }
+
+    function transportEscape(t) {
+        const buffType = t.buffType;
+        const esc = DIFFICULTIES[difficulty].escape;
+        const existingEnemies = enemies.filter(e => !e.isTransport);
+        if (buffType === 'reinforcement') {
+            bossMaxCapacity = Math.min(MAX_BOSS_CAPACITY,
+                bossMaxCapacity + (esc.reinforcement === 'existing' ? existingEnemies.length : esc.reinforcement));
+        } else {
+            for (const e of existingEnemies) {
+                applyBeaconEffect(e, buffType, true);
+            }
+        }
+        const idx = enemies.indexOf(t);
+        if (idx >= 0) enemies.splice(idx, 1);
+        destroyTransport(t);
+        trySpawnTransport(true);
+        spawnDelayActive = true;
+        spawnDelayTimer = ENEMY_SPAWN_DELAY;
+    }
+
+    function getKillScore(e) {
+        if (e.type === 'arc') return 50;
+        if (e.type === 'heavy') return 30;
+        if (e.type === 'fast') return 15;
+        return 10;
+    }
+
+    function breakArcCutter(e) {
+        e.arcBroken = true;
+        e.retreating = true;
+        e.health = e.maxHP = e.hp = e.baseMaxHP || 50;
+        e.buff = null;
+        e.hasLifeBuff = false;
+        e.hasRecoveryBuff = false;
+        e.doubledDamage = false;
+        e.doubledFireRate = false;
+        e.lifeBuffConsumed = false;
+        e.sizeMultiplier = 1;
+        e.invincible = 240;
+        if (e.chasingBeacon) {
+            e.chasingBeacon = null;
+            chasingBeaconCount = Math.max(0, chasingBeaconCount - 1);
+        }
+        createExplosion(e.x, e.y, 40, 260);
+    }
+
+    function applyPlayerBulletDamage(e) {
+        for (let j = bullets.length - 1; j >= 0; j--) {
+            if (checkCollision(bullets[j], e)) {
+                const bx = bullets[j].x;
+                bullets.splice(j, 1);
+                if (e.invincible > 0) {
+                    createExplosion(bx || e.x, e.y, 8, 180);
+                } else {
+                    if (e.hasLifeBuff && !e.lifeBuffConsumed) {
+                        e.lifeBuffConsumed = true;
+                        e.health = e.health * 50;
+                        e.maxHP = e.maxHP * 50;
+                        e.hp = e.maxHP;
+                        e.sizeMultiplier = 2;
+                    }
+                    e.health--;
+                    createExplosion(bx || e.x, e.y, 8, 60);
+                    if (e.health <= 0) {
+                        if (e.type === 'arc' && !e.arcBroken) {
+                            breakArcCutter(e);
+                        } else {
+                            createExplosion(e.x, e.y, 30, e.type === 'heavy' ? 280 : e.type === 'fast' ? 120 : 200);
+                            score += getKillScore(e);
+                            if (!e.isTransport && !transportSpawnDisabled) {
+                                enemyKillCount++;
+                                if (enemyKillCount >= 20 && transports.length === 0 && transportCooldown <= 0 && !transportSpawnDisabled) {
+                                    trySpawnTransport();
+                                    enemyKillCount -= 20;
+                                }
+                            }
+                            removeEnemy(e);
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        return false;
+    }
+
+    function update(delta) {
+        if (gameState !== 'playing') return;
+
+        if (healBlockTimer > 0) healBlockTimer -= delta;
+        if (dashCooldown > 0) dashCooldown -= delta;
+        if (dashCooldown < 0) dashCooldown = 0;
+        if (transportCooldown > 0) transportCooldown -= delta;
+        if (player.invincible > 0) player.invincible -= delta;
+        if (player.shootCooldown > 0) player.shootCooldown -= delta;
+        if (player.ultimateShootCooldown > 0) player.ultimateShootCooldown -= delta;
+        if (ultimateInvTimer > 0) ultimateInvTimer -= delta;
+        if (subtitleTimer > 0) {
+            subtitleTimer -= delta;
+            if (subtitleTimer <= 0) hideSubtitle();
+        }
+
+        if (isDashing) {
+            dashTimer -= delta;
+            if (dashPhase === 'dive') {
+                player.y += 9 * delta;
+                if (player.y >= canvas.height * 0.85) {
+                    player.y = canvas.height * 0.85;
+                    dashPhase = 'hold';
+                    dashHoldTimer = 30;
+                }
+            } else if (dashPhase === 'hold') {
+                dashHoldTimer -= delta;
+                if (dashHoldTimer <= 0) dashPhase = 'return';
+            } else {
+                player.y -= 5 * delta;
+                if (player.y <= 100) {
+                    player.y = 100;
+                    isDashing = false;
+                }
+            }
+            if (dashPhase !== 'dive') {
+                if (keys.left && player.x - player.width / 2 > 0) player.x -= player.speed * delta;
+                if (keys.right && player.x + player.width / 2 < canvas.width) player.x += player.speed * delta;
+            }
+            if (dashTimer <= 0) dashPhase = 'return';
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                if (e.isTransport) {
+                    if (checkCollision(player, e)) {
+                        e.hp -= 999;
+                        if (e.hp <= 0) {
+                            destroyTransportKilled(e);
+                        }
+                    }
+                } else if (checkCollision(player, e)) {
+                    if (e.type === 'arc' && e.invincible > 0) continue;
+                    createExplosion(e.x, e.y, 35, 0);
+                    if (e.type === 'arc' && !e.arcBroken) {
+                        breakArcCutter(e);
+                    } else {
+                        healPlayer(getEnemyDamage(e));
+                        score += getKillScore(e);
+                        removeEnemy(e);
+                    }
+                }
+            }
+        } else {
+            if (keys.left && player.x - player.width / 2 > 0) player.x -= player.speed * delta;
+            if (keys.right && player.x + player.width / 2 < canvas.width) player.x += player.speed * delta;
+        }
+        if (keys.shoot) playerShoot();
+
+        if (spawnDelayActive) {
+            spawnDelayTimer -= delta;
+            if (spawnDelayTimer <= 0) spawnDelayActive = false;
+        }
+        if (!spawnDelayActive || transports.length > 0) {
+            const rate = transports.length > 0 ? DIFFICULTIES[difficulty].spawnRate : 1;
+            spawnAccumulator += rate;
+            while (spawnAccumulator >= 1) {
+                trySpawnEnemy();
+                spawnAccumulator -= 1;
+            }
+        }
+
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            const b = bullets[i];
+            if (b.isHoming && enemies.length > 0) {
+                let closest = null, minDist = Infinity;
+                for (const e of enemies) {
+                    if (e.isTransport) continue;
+                    const d = Math.hypot(e.x - b.x, e.y - b.y);
+                    if (d < minDist) { minDist = d; closest = e; }
+                }
+                if (closest) {
+                    const dx = closest.x - b.x, dy = closest.y - b.y;
+                    const len = Math.hypot(dx, dy) || 1;
+                    b.vx += (dx / len) * 0.3;
+                    b.vx = Math.max(-5, Math.min(5, b.vx));
+                    b.x += b.vx * delta;
+                }
+            }
+            b.y += b.speed * delta;
+            if (b.y > canvas.height + 20 || b.y < -20 || b.x < -20 || b.x > canvas.width + 20) {
+                bullets.splice(i, 1);
+            }
+        }
+
+        for (let i = enemyBullets.length - 1; i >= 0; i--) {
+            enemyBullets[i].y -= enemyBullets[i].speed * delta;
+            enemyBullets[i].x += (enemyBullets[i].vx || 0) * delta;
+            if (enemyBullets[i].y < -20 || enemyBullets[i].x < -20 || enemyBullets[i].x > canvas.width + 20) {
+                enemyBullets.splice(i, 1);
+            }
+        }
+
+        for (let i = wingmanBullets.length - 1; i >= 0; i--) {
+            wingmanBullets[i].y += wingmanBullets[i].speed * delta;
+            if (wingmanBullets[i].y > canvas.height + 20) wingmanBullets.splice(i, 1);
+        }
+
+        for (let i = healingBullets.length - 1; i >= 0; i--) {
+            const hb = healingBullets[i];
+            const dx = player.x - hb.x;
+            const dy = player.y - hb.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist > 0) {
+                hb.x += (dx / dist) * hb.speed * delta;
+                hb.y += (dy / dist) * hb.speed * delta;
+            }
+            if (dist < 20) {
+                healPlayer(10);
+                healingBullets.splice(i, 1);
+                continue;
+            }
+            if (hb.y < -20 || hb.y > canvas.height + 20 || hb.x < -20 || hb.x > canvas.width + 20) {
+                healingBullets.splice(i, 1);
+            }
+        }
+
+        if (wingmen.length < ACTIVE_WINGMAN_LIMIT && reserveWingmen.length > 0) {
+            reserveTimer += delta;
+            if (reserveTimer >= 300) {
+                reserveTimer = 0;
+                while (wingmen.length < ACTIVE_WINGMAN_LIMIT && reserveWingmen.length > 0) {
+                    wingmen.push(reserveWingmen.shift());
+                }
+            }
+        } else {
+            reserveTimer = 0;
+        }
+
+        for (const w of wingmen) {
+            w.shootCooldown -= delta;
+            if (w.shootCooldown <= 0) w.shootReady = true;
+            if (w.invincible > 0) w.invincible -= delta;
+            let targetX, targetY;
+            if (w.type === 'healer') {
+                let healerIdx = 0;
+                for (const wm of wingmen) {
+                    if (wm.type === 'healer' && wm !== w) healerIdx++;
+                    else if (wm === w) break;
+                }
+                targetX = player.x + HEALER_X[healerIdx % HEALER_X.length];
+                targetY = player.y + HEALER_Y[healerIdx % HEALER_Y.length];
+            } else {
+                let normalIdx = 0;
+                for (const wm of wingmen) {
+                    if (wm.type === 'normal' && wm !== w) normalIdx++;
+                    else if (wm === w) break;
+                }
+                targetX = player.x + NORMAL_X[normalIdx % NORMAL_X.length];
+                targetY = player.y + NORMAL_Y[normalIdx % NORMAL_Y.length];
+            }
+            w.x += (targetX - w.x) * 0.08 * delta;
+            w.y += (targetY - w.y) * 0.08 * delta;
+            wingmanShoot(w);
+        }
+
+        for (let i = beacons.length - 1; i >= 0; i--) {
+            const bc = beacons[i];
+            bc.y += bc.speed * delta;
+            bc.driftTimer += delta;
+            if (bc.driftTimer >= bc.driftCooldown) {
+                bc.driftDir = Math.random() > 0.5 ? 1 : (Math.random() > 0.5 ? -1 : 0);
+                bc.driftTimer = 0;
+                bc.driftCooldown = Math.random() * 120 + 60;
+            }
+            bc.x += bc.driftDir * 0.5 * delta;
+            if (bc.x < 15) { bc.x = 15; bc.driftDir = 1; }
+            if (bc.x > canvas.width - 15) { bc.x = canvas.width - 15; bc.driftDir = -1; }
+            if (bc.y > canvas.height + 20) {
+                beacons.splice(i, 1);
+                if (Math.random() < 0.90) rewardWingman();
+            }
+        }
+
+        for (let i = transports.length - 1; i >= 0; i--) {
+            const t = transports[i];
+            if (!t.arrived) {
+                t.y -= t.speed * delta;
+                if (t.y <= canvas.height * 0.15) {
+                    t.y = canvas.height * 0.15;
+                    t.arrived = true;
+                }
+            } else {
+                t.y -= t.speed * 0.3 * delta;
+                t.x += Math.sin(Date.now() * 0.001) * 0.5 * delta;
+                if (!escapeRefillDone && DIFFICULTIES[difficulty].transportCapMult > 1 && t.y < 0) {
+                    escapeRefillDone = true;
+                    spawnDelayActive = false;
+                    for (let g = 0; g < 60 && bossCurrentCapacity < effectiveBossMaxCapacity(); g++) {
+                        trySpawnEnemy();
+                    }
+                }
+                if (t.y < -60) {
+                    transportEscape(t);
+                }
+            }
+        }
+        if (transports.length > 0) {
+            transportBar.style.width = (transports[0].hp / transports[0].maxHP * 100) + '%';
+        }
+
+        chasingBeaconCount = 0;
+        for (const e of enemies) {
+            if (e.chasingBeacon) chasingBeaconCount++;
+        }
+
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            const e = enemies[i];
+            if (e.invincible > 0) e.invincible -= delta;
+
+            if (e.type === 'normal' && !e.isTransport && (difficulty === 'hard' || difficulty === 'crazy')) {
+                if (e.escapeDash && e.buff !== null) {
+                    e.escapeDash = false;
+                }
+                if (!e.escapeDash && e.buff === null) {
+                    e.escapeTimer -= delta;
+                    if (e.escapeTimer <= 0) {
+                        e.escapeDash = true;
+                        if (e.chasingBeacon) {
+                            e.chasingBeacon = null;
+                            chasingBeaconCount = Math.max(0, chasingBeaconCount - 1);
+                        }
+                    }
+                }
+            }
+
+            if (e.chasingBeacon) {
+                const bc = e.chasingBeacon;
+                if (!beacons.includes(bc)) {
+                    e.chasingBeacon = null;
+                    chasingBeaconCount = Math.max(0, chasingBeaconCount - 1);
+                } else {
+                    const dx = bc.x - e.x;
+                    const dy = bc.y - e.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist > 0) {
+                        e.x += (dx / dist) * 3 * delta;
+                        e.y += (dy / dist) * 3 * delta;
+                    }
+                    if (dist < 15) {
+                        applyBeaconEffect(e, bc.type);
+                        const bcIdx = beacons.indexOf(bc);
+                        if (bcIdx >= 0) beacons.splice(bcIdx, 1);
+                        e.chasingBeacon = null;
+                        chasingBeaconCount = Math.max(0, chasingBeaconCount - 1);
+                    }
+                    if (e.hasRecoveryBuff) {
+                        e.health = Math.min(e.maxHP, e.health + 0.067 * delta);
+                    }
+                    enemyFire(e, delta);
+                    applyPlayerBulletDamage(e);
+                    continue;
+                }
+            }
+
+            if (!e.isTransport && !e.escapeDash && e.arrived && e.invincible <= 0 && beacons.length > 0 && chasingBeaconCount < 3) {
+                let nearest = null, nearDist = Infinity;
+                for (const bc of beacons) {
+                    const d = Math.hypot(bc.x - e.x, bc.y - e.y);
+                    if (d < nearDist) { nearDist = d; nearest = bc; }
+                }
+                if (nearest && nearDist < 250) {
+                    e.chasingBeacon = nearest;
+                    chasingBeaconCount++;
+                }
+            }
+
+            if (e.hasRecoveryBuff) {
+                e.regenTimer = (e.regenTimer || 0) + delta;
+                if (e.regenTimer >= 60) {
+                    e.health = Math.min(e.maxHP, e.health + 4);
+                    e.regenTimer = 0;
+                }
+            }
+
+            if (!e.isTransport) {
+                if (e.type === 'arc' && !e.arcBroken) {
+                    e.arcCycle -= delta;
+                    if (e.arcCycle <= 0) e.arcCycle += 300;
+                    e.arcTickTimer -= delta;
+                    if (e.arcCycle > 60 && e.arcTickTimer <= 0 && Math.hypot(e.x - player.x, e.y - player.y) < 58 + player.width * 0.35) {
+                        e.arcTickTimer = 30;
+                        damagePlayer(2);
+                    }
+                    if (e.arrived) {
+                        let threatSign = 0, threatTime = Infinity;
+                        for (const b of bullets) {
+                            if (b.isHoming || b.y >= e.y) continue;
+                            const t = (e.y - b.y) / b.speed;
+                            if (t < 0 || t > 20) continue;
+                            const pxB = b.x + (b.vx || 0) * t;
+                            const d = Math.abs(pxB - e.x);
+                            if (d < (b.width + e.width) / 2 + 6 && d < 90 && t < threatTime) {
+                                threatTime = t;
+                                threatSign = e.x <= pxB ? -1 : 1;
+                            }
+                        }
+                        if (threatSign !== 0) {
+                            e.x += threatSign * 3.2 * delta;
+                            e.y += 0.9 * delta;
+                            const dx = player.x - e.x, dy = player.y + 95 - e.y;
+                            const toTarget = Math.hypot(dx, dy) || 1;
+                            e.x += (dx / toTarget) * 0.7 * delta;
+                            e.y += (dy / toTarget) * 0.7 * delta;
+                            e.x = Math.max(30, Math.min(canvas.width - 30, e.x));
+                            e.y = Math.max(40, Math.min(canvas.height - 20, e.y));
+                        } else {
+                            const dxP = e.x - player.x, dyP = e.y - player.y;
+                            const toPlayer = Math.hypot(dxP, dyP) || 1;
+                            if (toPlayer > 95) {
+                                const dx = player.x - e.x, dy = player.y + 95 - e.y;
+                                const toTarget = Math.hypot(dx, dy) || 1;
+                                e.x += (dx / toTarget) * 1.6 * delta;
+                                e.y += (dy / toTarget) * 1.6 * delta;
+                            } else if (toPlayer < 75) {
+                                e.x += (dxP / toPlayer) * 1.2 * delta;
+                                e.y += (dyP / toPlayer) * 1.2 * delta;
+                            }
+                            e.x = Math.max(30, Math.min(canvas.width - 30, e.x));
+                            e.y = Math.max(40, Math.min(canvas.height - 20, e.y));
+                        }
+                    }
+                }
+                if (e.escapeDash && e.type === 'normal' && (difficulty === 'hard' || difficulty === 'crazy')) {
+                    e.y -= e.speed * 2 * delta;
+                    if (e.y < player.y + 120 && Math.abs(e.x - player.x) < (e.width + player.width) / 2 + 24) {
+                        const away = e.x < player.x ? -1 : 1;
+                        e.x += away * 2.5 * delta;
+                    }
+                    e.x = Math.max(20, Math.min(canvas.width - 20, e.x));
+                } else if (e.type === 'arc' && e.retreating) {
+                    e.y += 1.2 * delta;
+                    if (e.y >= canvas.height - 20) {
+                        e.y = canvas.height - 20;
+                        e.retreating = false;
+                        e.arrived = true;
+                        e.targetY = canvas.height * 0.78;
+                        e.invincible = Math.min(e.invincible, 60);
+                        e.shootTimer = 40;
+                    }
+                } else if (!e.arrived) {
+                    e.y -= e.speed * delta;
+                    if (e.y <= e.targetY) {
+                        e.y = e.targetY;
+                        e.arrived = true;
+                    }
+                } else if (!(e.type === 'arc' && !e.arcBroken)) {
+                    e.moveTimer += delta;
+                    if (e.moveTimer > 60 + Math.random() * 40) {
+                        e.moveDir *= -1;
+                        e.moveTimer = 0;
+                    }
+                    e.x += e.moveDir * 1.5 * delta;
+                    if (e.x < 30) { e.x = 30; e.moveDir = 1; }
+                    if (e.x > canvas.width - 30) { e.x = canvas.width - 30; e.moveDir = -1; }
+                    if (e.type === 'arc') {
+                        if (e.arcVy === undefined) e.arcVy = 0.6;
+                        e.y += e.arcVy * delta;
+                        if (e.y <= e.targetY - 30) { e.y = e.targetY - 30; e.arcVy = Math.abs(e.arcVy); }
+                        if (e.y >= canvas.height - 40) { e.y = canvas.height - 40; e.arcVy = -Math.abs(e.arcVy); }
+                    } else {
+                        const drift = Math.sin(e.moveTimer * 0.05) * 0.3;
+                        e.y += drift * delta;
+                    }
+                    if (e.y < e.targetY - 30) e.y = e.targetY - 30;
+                    if (e.y > canvas.height - 40) e.y = canvas.height - 40;
+                }
+                if (!e.escapeDash) enemyFire(e, delta);
+                if (e.y < -60) {
+                    if (e.type === 'normal' && !e.isTransport && !transportSpawnDisabled) {
+                        score = Math.max(0, score - getKillScore(e) * 2);
+                        enemyKillCount++;
+                        createExplosion(e.x, e.y, 18, 0);
+                        if (enemyKillCount >= 20 && transports.length === 0 && transportCooldown <= 0 && !transportSpawnDisabled) {
+                            trySpawnTransport();
+                            enemyKillCount -= 20;
+                        }
+                    }
+                    removeEnemy(e);
+                    continue;
+                }
+            }
+
+            if (!e.isTransport) {
+                applyPlayerBulletDamage(e);
+            } else {
+                for (let j = bullets.length - 1; j >= 0; j--) {
+                    if (checkCollision(bullets[j], e)) {
+                        const bx = bullets[j].x;
+                        bullets.splice(j, 1);
+                        e.hp -= 1;
+                        createExplosion(bx || e.x, e.y, 10, 300);
+                        if (e.hp <= 0) {
+                            destroyTransportKilled(e);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (let i = wingmanBullets.length - 1; i >= 0; i--) {
+            for (let j = enemies.length - 1; j >= 0; j--) {
+                if (enemies[j].isTransport) {
+                    if (checkCollision(wingmanBullets[i], enemies[j])) {
+                        wingmanBullets.splice(i, 1);
+                        enemies[j].hp -= 1;
+                        createExplosion(enemies[j].x, enemies[j].y, 10, 300);
+                        if (enemies[j].hp <= 0) {
+                            destroyTransportKilled(enemies[j]);
+                        }
+                        break;
+                    }
+                } else if (checkCollision(wingmanBullets[i], enemies[j])) {
+                    wingmanBullets.splice(i, 1);
+                    if (enemies[j].invincible <= 0) {
+                        if (enemies[j].hasLifeBuff && !enemies[j].lifeBuffConsumed) {
+                            enemies[j].lifeBuffConsumed = true;
+                            enemies[j].health = enemies[j].health * 50;
+                            enemies[j].maxHP = enemies[j].maxHP * 50;
+                            enemies[j].hp = enemies[j].maxHP;
+                            enemies[j].sizeMultiplier = 2;
+                        }
+                        enemies[j].health--;
+                        createExplosion(enemies[j].x, enemies[j].y, 8, 60);
+                        if (enemies[j].health <= 0) {
+                            if (enemies[j].type === 'arc' && !enemies[j].arcBroken) {
+                                breakArcCutter(enemies[j]);
+                            } else {
+                                createExplosion(enemies[j].x, enemies[j].y, 30, 120);
+                                score += getKillScore(enemies[j]);
+                                if (!enemies[j].isTransport && !transportSpawnDisabled) {
+                                    enemyKillCount++;
+                                    if (enemyKillCount >= 20 && transports.length === 0 && transportCooldown <= 0 && !transportSpawnDisabled) {
+                                        trySpawnTransport();
+                                        enemyKillCount -= 20;
+                                    }
+                                }
+                                removeEnemy(enemies[j]);
+                            }
+                        }
+                    } else {
+                        createExplosion(enemies[j].x, enemies[j].y, 8, 180);
+                    }
+                    break;
+                }
+            }
+        }
+
+        const capacityOverflow = wingmanCurrentCapacity > wingmanMaxCapacity;
+        if (capacityOverflow && !overflowWarned) {
+            overflowWarned = true;
+            showSubtitle('僚机容量超限！驻场僚机将承受敌方伤害', 600);
+        }
+
+        if (capacityOverflow) {
+            for (let i = enemyBullets.length - 1; i >= 0; i--) {
+                for (let j = wingmen.length - 1; j >= 0; j--) {
+                    if (checkCollision(enemyBullets[i], wingmen[j])) {
+                        const bDmg = enemyBullets[i].damage || 5;
+                        enemyBullets.splice(i, 1);
+                        if (wingmen[j].invincible > 0) break;
+                        wingmen[j].hp -= bDmg;
+                        if (wingmen[j].hp <= 0) {
+                            createExplosion(wingmen[j].x, wingmen[j].y, 25, 200);
+                            wingmanCurrentCapacity -= wingmen[j].capacityCost;
+                            if (wingmanCurrentCapacity < 0) wingmanCurrentCapacity = 0;
+                            wingmen.splice(j, 1);
+                        } else {
+                            wingmen[j].invincible = 180;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!isDashing) {
+            for (let i = enemyBullets.length - 1; i >= 0; i--) {
+                if (checkCollision(enemyBullets[i], player)) {
+                    const dmg = enemyBullets[i].damage || 5;
+                    enemyBullets.splice(i, 1);
+                    damagePlayer(dmg);
+                    break;
+                }
+            }
+        }
+
+        if (!isDashing && player.invincible <= 0) {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                if (enemies[i].isTransport) continue;
+                if (enemies[i].type === 'arc' && enemies[i].invincible > 0) continue;
+                if (checkCollision(enemies[i], player)) {
+                    const e = enemies[i];
+                    createExplosion(e.x, e.y, 35, 0);
+                    if (e.type === 'arc' && !e.arcBroken) {
+                        breakArcCutter(e);
+                    } else {
+                        healPlayer(getEnemyDamage(e));
+                        score += getKillScore(e);
+                        removeEnemy(e);
+                    }
+                    break;
+                }
+            }
+        }
+
+        for (let i = explosions.length - 1; i >= 0; i--) {
+            const exp = explosions[i];
+            exp.alpha -= 0.025 * delta;
+            for (const p of exp.particles) {
+                p.x += p.vx * delta;
+                p.y += p.vy * delta;
+                p.size *= 0.97;
+            }
+            if (exp.alpha <= 0) explosions.splice(i, 1);
+        }
+
+        for (const star of starField) {
+            star.y += star.speed * delta;
+            if (star.y > canvas.height) { star.y = 0; star.x = Math.random() * canvas.width; }
+        }
+
+        tryUnlockSkill();
+        tryToggleUltimateMode();
+
+        scoreDisplay.textContent = endlessMode ? score : score + ' / ' + DIFFICULTIES[difficulty].winScore;
+        endlessTag.style.display = endlessMode ? 'inline' : 'none';
+        killCountDisplay.textContent = enemyKillCount;
+        healthBar.style.width = (player.hp / player.maxHP * 100) + '%';
+        healthText.textContent = Math.max(0, player.hp) + '/' + player.maxHP;
+        bossCapBar.style.width = (bossCurrentCapacity / effectiveBossMaxCapacity() * 100) + '%';
+        bossCapText.textContent = bossCurrentCapacity + '/' + effectiveBossMaxCapacity();
+        bossMaxCapText.textContent = '上限:' + effectiveBossMaxCapacity();
+        wingCapBar.style.width = (wingmanCurrentCapacity / wingmanMaxCapacity * 100) + '%';
+        wingCapText.textContent = wingmanCurrentCapacity + '/' + wingmanMaxCapacity;
+        wingMaxCapText.textContent = '上限:' + wingmanMaxCapacity;
+        wingReserveText.textContent = reserveWingmen.length;
+        dashBar.style.width = ((1 - dashCooldown / dashMaxCooldown) * 100) + '%';
+
+        if (!endlessMode && gameState === 'playing') {
+            if (score >= DIFFICULTIES[difficulty].winScore) {
+                if (!winPending) {
+                    winPending = true;
+                    transportSpawnDisabled = true;
+                    if (hasResidualThreat()) {
+                        showSubtitle('还有运输机/信标/增益敌机未清除，请先清除！', 0);
+                    } else {
+                        winDelayTimer = 60;
+                    }
+                } else if (hasResidualThreat()) {
+                    showSubtitle('还有运输机/信标/增益敌机未清除，请先清除！', 0);
+                    winDelayTimer = 0;
+                } else {
+                    hideSubtitle();
+                    winDelayTimer -= delta;
+                    if (winDelayTimer <= 0) winGame();
+                }
+            } else if (winPending) {
+                winPending = false;
+                winDelayTimer = 0;
+                transportSpawnDisabled = false;
+                hideSubtitle();
+            }
+        }
+    }
+
+    function drawPlayer() {
+        ctx.save();
+        ctx.translate(player.x, player.y);
+        if (player.invincible > 0 && Math.floor(player.invincible / 3) % 2 === 0) ctx.globalAlpha = 0.5;
+        const hpPct = player.hp / player.maxHP;
+        const w = player.width, h = player.height;
+        ctx.fillStyle = '#2a2a2a';
+        ctx.beginPath();
+        ctx.moveTo(0, -h / 2); ctx.lineTo(-w * 0.15, -h * 0.3); ctx.lineTo(-w * 0.45, -h * 0.25);
+        ctx.lineTo(-w * 0.5, -h * 0.05); ctx.lineTo(-w * 0.45, h * 0.1); ctx.lineTo(-w * 0.3, h * 0.35);
+        ctx.lineTo(-w * 0.15, h * 0.45); ctx.lineTo(0, h * 0.5); ctx.lineTo(w * 0.15, h * 0.45);
+        ctx.lineTo(w * 0.3, h * 0.35); ctx.lineTo(w * 0.45, h * 0.1); ctx.lineTo(w * 0.5, -h * 0.05);
+        ctx.lineTo(w * 0.45, -h * 0.25); ctx.lineTo(w * 0.15, -h * 0.3);
+        ctx.closePath(); ctx.fill();
+        if (hpPct <= 0.8) {
+            ctx.strokeStyle = '#555'; ctx.lineWidth = 1; ctx.beginPath();
+            ctx.moveTo(-w * 0.3, h * 0.1); ctx.lineTo(-w * 0.25, h * 0.25);
+            ctx.moveTo(w * 0.3, h * 0.1); ctx.lineTo(w * 0.25, h * 0.25); ctx.stroke();
+        }
+        ctx.fillStyle = '#444';
+        ctx.fillRect(-w * 0.25, -h * 0.25, w * 0.12, h * 0.2);
+        ctx.fillRect(w * 0.13, -h * 0.25, w * 0.12, h * 0.2);
+        ctx.fillRect(-w * 0.08, -h * 0.25, w * 0.16, h * 0.15);
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath();
+        ctx.arc(-w * 0.19, -h * 0.2, 5, 0, Math.PI * 2);
+        ctx.arc(w * 0.19, -h * 0.2, 5, 0, Math.PI * 2); ctx.fill();
+        const glowColors = { spreadShot: '#00aaff', rapidFire: '#ffaa00', homingMissile: '#00ff00', ultimateMode: '#ff0000' };
+        for (const [skill, color] of Object.entries(glowColors)) {
+            if (skill === 'ultimateMode' ? ultimateActive : unlockedSkills[skill]) {
+                ctx.fillStyle = color; ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.005) * 0.3;
+                ctx.beginPath();
+                ctx.arc(-w * 0.35, -h * 0.2, 3, 0, Math.PI * 2);
+                ctx.arc(w * 0.35, -h * 0.2, 3, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(-w * 0.35, h * 0.1, w * 0.15, h * 0.15);
+        ctx.fillRect(w * 0.2, h * 0.1, w * 0.15, h * 0.15);
+        ctx.fillRect(-w * 0.12, h * 0.25, w * 0.24, h * 0.1);
+        ctx.fillStyle = '#666';
+        ctx.fillRect(-w * 0.32, h * 0.1, w * 0.08, h * 0.08);
+        ctx.fillRect(w * 0.24, h * 0.1, w * 0.08, h * 0.08);
+        ctx.fillStyle = hpPct > 0.2 ? '#00ff00' : '#ff0000';
+        ctx.globalAlpha = 0.6 + Math.sin(Date.now() * 0.008) * 0.3;
+        ctx.beginPath();
+        ctx.arc(-w * 0.38, -h * 0.25, 2, 0, Math.PI * 2);
+        ctx.arc(w * 0.38, -h * 0.25, 2, 0, Math.PI * 2);
+        ctx.arc(0, h * 0.45, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+        if (isDashing) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.moveTo(0, h * 0.5); ctx.lineTo(-w * 0.3, -h * 0.8); ctx.lineTo(w * 0.3, -h * 0.8);
+            ctx.closePath(); ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    function drawEnemy(enemy) {
+        ctx.save();
+        ctx.translate(enemy.x, enemy.y);
+        const sm = enemy.sizeMultiplier || 1;
+        if (sm !== 1) ctx.scale(sm, sm);
+
+        if (enemy.buff === 'life' && !enemy.lifeBuffConsumed) {
+            ctx.globalAlpha = 0.7 + Math.sin(Date.now() * 0.01) * 0.3;
+        }
+        if (enemy.buff === 'recovery') {
+            ctx.globalAlpha = 0.8 + Math.sin(Date.now() * 0.008) * 0.2;
+        }
+
+        if (enemy.type === 'heavy') {
+            ctx.fillStyle = enemy.doubledDamage ? '#cc00cc' : '#880088';
+            ctx.beginPath();
+            ctx.moveTo(0, -enemy.height / 2); ctx.lineTo(-enemy.width / 2, enemy.height / 3);
+            ctx.lineTo(-enemy.width / 3, enemy.height / 2); ctx.lineTo(0, enemy.height / 3);
+            ctx.lineTo(enemy.width / 3, enemy.height / 2); ctx.lineTo(enemy.width / 2, enemy.height / 3);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = enemy.doubledDamage ? '#ff88ff' : '#ff00ff';
+            ctx.beginPath();
+            ctx.arc(-enemy.width / 3, 0, 4, 0, Math.PI * 2);
+            ctx.arc(enemy.width / 3, 0, 4, 0, Math.PI * 2); ctx.fill();
+        } else if (enemy.type === 'fast') {
+            ctx.fillStyle = enemy.doubledFireRate ? '#00dd00' : '#00aa00';
+            ctx.beginPath();
+            ctx.moveTo(0, -enemy.height / 2); ctx.lineTo(-enemy.width / 2, enemy.height / 4);
+            ctx.lineTo(0, enemy.height / 2); ctx.lineTo(enemy.width / 2, enemy.height / 4);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = enemy.doubledFireRate ? '#88ff88' : '#00ff00';
+            ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+        } else if (enemy.type === 'arc') {
+            const w = enemy.width, h = enemy.height;
+            ctx.fillStyle = enemy.arcBroken ? '#2e2e3e' : '#3a3a7a';
+            ctx.beginPath();
+            ctx.moveTo(0, -h / 2); ctx.lineTo(-w * 0.45, -h * 0.3); ctx.lineTo(-w * 0.4, h * 0.1);
+            ctx.lineTo(-w * 0.2, h * 0.45); ctx.lineTo(w * 0.2, h * 0.45);
+            ctx.lineTo(w * 0.4, h * 0.1); ctx.lineTo(w * 0.45, -h * 0.3);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = enemy.arcBroken ? '#ff2222' : '#6a6aaa';
+            ctx.beginPath();
+            ctx.arc(-w * 0.22, -h * 0.15, 5, 0, Math.PI * 2);
+            ctx.arc(w * 0.22, -h * 0.15, 5, 0, Math.PI * 2); ctx.fill();
+            if (enemy.arcBroken) {
+                ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(-w * 0.3, h * 0.2); ctx.lineTo(0, h * 0); ctx.lineTo(w * 0.3, h * 0.2);
+                ctx.stroke();
+            } else {
+                const t = Date.now() * 0.006;
+                const rx = 58, ry = 52, N = 28;
+                const ring = (phase, alpha, width, lightness) => {
+                    ctx.beginPath();
+                    for (let i = 0; i <= N; i++) {
+                        const ang = (i / N) * Math.PI * 2;
+                        const wob = Math.sin(ang * 3 + t * 2 + phase) * 2.5 + Math.sin(ang * 7 - t * 3 + phase * 1.7) * 1.5;
+                        const px = Math.cos(ang) * (rx + wob);
+                        const py = Math.sin(ang) * (ry + wob * 0.8);
+                        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.strokeStyle = `hsl(${200 + phase * 20}, 100%, ${lightness}%)`;
+                    ctx.lineWidth = width;
+                    ctx.globalAlpha = alpha;
+                    ctx.stroke();
+                };
+                const cycle = enemy.arcCycle === undefined ? 300 : enemy.arcCycle;
+                const ringOn = cycle > 60;
+                const warn = ringOn && cycle <= 78;
+                if (!ringOn) {
+                    ring(0, 0.12, 1.2, 45 + Math.sin(t * 2) * 8);
+                    ctx.globalAlpha = 1;
+                } else {
+                    const flicker = warn ? 0.3 + Math.sin(t * 30) * 0.3 : 0;
+                    ring(0, Math.max(0.1, 0.8 - flicker), 2.5, 65 + Math.sin(t * 2) * 10);
+                    ring(1.3, Math.max(0.1, 0.6 - flicker), 1.5, 50 + Math.sin(t * 2 + 1) * 10);
+                    for (let s = 0; s < 3; s++) {
+                        const sa = t * 1.2 + s * (Math.PI * 2 / 3);
+                        const sx = Math.cos(sa) * rx, sy = Math.sin(sa) * ry;
+                        ctx.strokeStyle = `hsl(${210 + s * 10}, 100%, 75%)`;
+                        ctx.lineWidth = 2;
+                        ctx.globalAlpha = 0.5 + Math.sin(t * 3 + s) * 0.3;
+                        ctx.beginPath();
+                        ctx.moveTo(sx - 5, sy - 3); ctx.lineTo(sx, sy + 2); ctx.lineTo(sx + 5, sy - 3);
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+            }
+        } else {
+            ctx.fillStyle = enemy.buff === 'reinforcement' ? '#aa00cc' : '#0066aa';
+            ctx.beginPath();
+            ctx.moveTo(0, -enemy.height / 2); ctx.lineTo(-enemy.width / 2, enemy.height / 3);
+            ctx.lineTo(-enemy.width / 4, enemy.height / 2); ctx.lineTo(0, enemy.height / 3);
+            ctx.lineTo(enemy.width / 4, enemy.height / 2); ctx.lineTo(enemy.width / 2, enemy.height / 3);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = enemy.buff === 'reinforcement' ? '#dd44ff' : '#00aaff';
+            ctx.beginPath();
+            ctx.arc(-enemy.width / 4, enemy.height / 4, 3, 0, Math.PI * 2);
+            ctx.arc(enemy.width / 4, enemy.height / 4, 3, 0, Math.PI * 2); ctx.fill();
+        }
+
+        if (enemy.buff && enemy.buff !== 'reinforcement') {
+            ctx.fillStyle = BEACON_COLORS[enemy.buff];
+            ctx.globalAlpha = 0.4 + Math.sin(Date.now() * 0.01) * 0.3;
+            ctx.beginPath();
+            ctx.arc(0, 0, enemy.width * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        if (enemy.invincible > 0) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.015) * 0.3;
+            ctx.beginPath();
+            ctx.arc(0, 0, enemy.width * 0.7, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        if (enemy.type === 'normal' && !enemy.isTransport && (difficulty === 'hard' || difficulty === 'crazy') && enemy.buff === null && (enemy.escapeDash || (enemy.escapeTimer > 0 && enemy.escapeTimer <= 180))) {
+            ctx.strokeStyle = '#0066aa';
+            ctx.lineWidth = 2.5;
+            ctx.globalAlpha = enemy.escapeDash
+                ? 0.7 + Math.sin(Date.now() * 0.03) * 0.3
+                : 0.55 + Math.sin(Date.now() * 0.02) * 0.35;
+            ctx.beginPath();
+            ctx.arc(0, 0, enemy.width * 0.75, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        ctx.restore();
+    }
+
+    function drawTransport(t) {
+        ctx.save();
+        ctx.translate(t.x, t.y);
+        const w = t.width, h = t.height;
+
+        ctx.fillStyle = '#553300';
+        ctx.beginPath();
+        ctx.moveTo(0, -h / 2); ctx.lineTo(-w * 0.4, h * 0.2);
+        ctx.lineTo(-w * 0.5, h * 0.35); ctx.lineTo(-w * 0.3, h * 0.4);
+        ctx.lineTo(-w * 0.1, h * 0.45); ctx.lineTo(0, h * 0.5);
+        ctx.lineTo(w * 0.1, h * 0.45); ctx.lineTo(w * 0.3, h * 0.4);
+        ctx.lineTo(w * 0.5, h * 0.35); ctx.lineTo(w * 0.4, h * 0.2);
+        ctx.closePath(); ctx.fill();
+
+        ctx.fillStyle = '#774400';
+        ctx.fillRect(-w * 0.25, -h * 0.2, w * 0.5, h * 0.5);
+
+        const buffColor = BEACON_COLORS[t.buffType];
+        ctx.fillStyle = buffColor;
+        ctx.globalAlpha = 0.6 + Math.sin(Date.now() * 0.008) * 0.3;
+        ctx.beginPath();
+        ctx.arc(-w * 0.3, 0, 4, 0, Math.PI * 2);
+        ctx.arc(w * 0.3, 0, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.fillStyle = '#ff0';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(BEACON_NAMES[t.buffType], 0, -h / 2 - 8);
+        ctx.textAlign = 'left';
+
+        ctx.fillStyle = '#333';
+        ctx.fillRect(-w * 0.4, -h / 2 - 4, w * 0.8, 3);
+        ctx.fillStyle = buffColor;
+        ctx.fillRect(-w * 0.4, -h / 2 - 4, w * 0.8 * (t.hp / t.maxHP), 3);
+
+        ctx.restore();
+    }
+
+    function drawBeacon(bc) {
+        ctx.save();
+        ctx.translate(bc.x, bc.y);
+        const color = BEACON_COLORS[bc.type];
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.7 + Math.sin(Date.now() * 0.01) * 0.3;
+        ctx.beginPath();
+        ctx.arc(0, 0, bc.width / 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 8px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const label = { life: '生', recovery: '恢', firepower: '火', rage: '怒', reinforcement: '援' };
+        ctx.fillText(label[bc.type], 0, 0);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.restore();
+    }
+
+    function drawWingman(w) {
+        ctx.save();
+        ctx.translate(w.x, w.y);
+        if (w.hp <= 0) { ctx.restore(); return; }
+        if (w.type === 'healer') {
+            ctx.fillStyle = '#00cc00';
+            ctx.beginPath();
+            ctx.moveTo(0, -w.height / 2); ctx.lineTo(-w.width / 2, w.height / 2);
+            ctx.lineTo(0, w.height / 3); ctx.lineTo(w.width / 2, w.height / 2);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-3, -6, 6, 12);
+            ctx.fillRect(-6, -3, 12, 6);
+        } else {
+            ctx.fillStyle = '#ff9900';
+            ctx.beginPath();
+            ctx.moveTo(0, w.height / 2); ctx.lineTo(-w.width / 2, -w.height / 2);
+            ctx.lineTo(0, -w.height / 3); ctx.lineTo(w.width / 2, -w.height / 2);
+            ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#ffcc00';
+            ctx.beginPath();
+            ctx.moveTo(0, w.height / 3); ctx.lineTo(-w.width / 4, -w.height / 4);
+            ctx.lineTo(w.width / 4, -w.height / 4);
+            ctx.closePath(); ctx.fill();
+        }
+        if (w.invincible > 0) {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = 0.5 + Math.sin(Date.now() * 0.015) * 0.3;
+            ctx.beginPath();
+            ctx.arc(0, 0, w.width * 0.8, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    function drawBullet(b, color) {
+        ctx.fillStyle = color;
+        ctx.shadowColor = color; ctx.shadowBlur = 8;
+        roundRect(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height, 2);
+        ctx.fill(); ctx.shadowBlur = 0;
+    }
+
+    function drawExplosion(exp) {
+        ctx.save(); ctx.globalAlpha = exp.alpha;
+        for (const p of exp.particles) {
+            ctx.fillStyle = `hsl(${p.hue}, 100%, ${50 + Math.random() * 30}%)`;
+            ctx.beginPath();
+            ctx.arc(exp.x + p.x, exp.y + p.y, Math.max(0, p.size), 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+
+    function draw() {
+        ctx.fillStyle = '#0a0a2e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        for (const star of starField) {
+            ctx.globalAlpha = star.alpha;
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        if (gameState === 'playing' || gameState === 'paused') {
+            for (const bc of beacons) drawBeacon(bc);
+            drawPlayer();
+            for (const w of wingmen) drawWingman(w);
+            for (const b of bullets) drawBullet(b, '#ffff00');
+            for (const b of enemyBullets) drawBullet(b, '#ff3333');
+            for (const b of wingmanBullets) drawBullet(b, '#ffaa00');
+            for (const b of healingBullets) drawBullet(b, '#00ff00');
+            for (const e of enemies) {
+                if (e.isTransport) drawTransport(e);
+                else drawEnemy(e);
+            }
+            for (const exp of explosions) drawExplosion(exp);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.font = '10px monospace';
+            ctx.fillText('HP: ' + Math.max(0, player.hp), 5, canvas.height - 30);
+            if (isDowned) {
+                ctx.fillStyle = '#f00'; ctx.font = 'bold 14px monospace';
+                ctx.fillText('濒死 - 伤害由僚机承担', 5, canvas.height - 10);
+            }
+        }
+    }
+
+    function gameLoop(timestamp) {
+        if (lastTime === 0) lastTime = timestamp;
+        deltaTime = (timestamp - lastTime) / 16.67;
+        lastTime = timestamp;
+        if (deltaTime > 3) deltaTime = 3;
+        update(deltaTime);
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function resetGameState() {
+        gameState = 'playing'; score = 0;
+        if (endlessMode) difficulty = 'easy';
+        player.maxHP = endlessMode ? 1000 : 500;
+        player.hp = player.maxHP; player.x = canvas.width / 2; player.y = 100;
+        player.invincible = 60; player.shootCooldown = 0;
+        bossCurrentCapacity = 0; bossMaxCapacity = 3;
+        wingmanMaxCapacity = 3; wingmanCurrentCapacity = 0;
+        isDowned = false; healBlockTimer = 0;
+        subtitleTimer = 0; hideSubtitle();
+        winPending = false; winDelayTimer = 0;
+        waveActive = false;
+        dashCooldown = 0; isDashing = false; dashTimer = 0;
+        dashPhase = 'dive'; dashHoldTimer = 0;
+        ultimateInvTimer = 0;
+        ultimateActive = false;
+        spawnDelayActive = false; spawnDelayTimer = 0;
+        spawnAccumulator = 0; escapeRefillDone = false;
+        transportCooldown = 0;
+        bullets.length = 0; enemyBullets.length = 0;
+        enemies.length = 0; explosions.length = 0;
+        wingmen.length = 0; wingmanBullets.length = 0; healingBullets.length = 0;
+        reserveWingmen.length = 0; reserveTimer = 0;
+        transports.length = 0; transportSpawnCount = 0; transportSpawnDisabled = false;
+        beacons.length = 0; enemyKillCount = 0;
+        chasingBeaconCount = 0;
+        overflowWarned = false;
+        keys.left = false; keys.right = false; keys.shoot = false;
+        player.shootCooldown = 30;
+        player.ultimateShootCooldown = 0;
+        for (const k in unlockedSkills) unlockedSkills[k] = false;
+        for (const k in skillDots) skillDots[k].classList.remove('active');
+        transportHud.style.display = 'none';
+        startScreen.style.display = 'none';
+        gameOverScreen.style.display = 'none';
+        pauseScreen.style.display = 'none';
+    }
+
+    function startGame() { resetGameState(); initStarField(); }
+
+    function gameOver() {
+        gameState = 'gameover';
+        document.getElementById('finalScore').textContent = score;
+        gameOverScreen.style.display = 'flex';
+    }
+
+    function winGame() {
+        gameState = 'win';
+        document.getElementById('finalWinScore').textContent = score;
+        winScreen.style.display = 'flex';
+    }
+
+    function showStartScreen() {
+        gameState = 'start';
+        gameOverScreen.style.display = 'none';
+        winScreen.style.display = 'none';
+        pauseScreen.style.display = 'none';
+        startScreen.style.display = 'flex';
+    }
+
+    function togglePause() {
+        if (gameState === 'playing') {
+            gameState = 'paused';
+            keys.left = false; keys.right = false; keys.shoot = false;
+            pauseScreen.style.display = 'flex';
+        } else if (gameState === 'paused') {
+            gameState = 'playing';
+            pauseScreen.style.display = 'none';
+        }
+    }
+
+    startBtn.addEventListener('click', startGame);
+    manualOpenBtn.addEventListener('click', () => { manualPanel.style.display = 'flex'; });
+    manualCloseBtn.addEventListener('click', () => { manualPanel.style.display = 'none'; });
+    restartBtn.addEventListener('click', showStartScreen);
+    winRestartBtn.addEventListener('click', showStartScreen);
+    resumeBtn.addEventListener('click', togglePause);
+    pauseMenuBtn.addEventListener('click', showStartScreen);
+    pauseBtn.addEventListener('click', togglePause);
+    diffBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.diff === 'endless') {
+                endlessMode = true;
+                difficulty = 'easy';
+            } else {
+                endlessMode = false;
+                difficulty = btn.dataset.diff;
+            }
+            diffBtns.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        });
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'KeyP' && (gameState === 'playing' || gameState === 'paused')) {
+            togglePause();
+            return;
+        }
+        if (e.code === 'Enter' && gameState === 'start') startGame();
+        if (e.code === 'Enter' && (gameState === 'gameover' || gameState === 'win')) showStartScreen();
+        if (gameState === 'paused') return;
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = true;
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = true;
+        if (e.code === 'Space') { keys.shoot = true; e.preventDefault(); }
+        if (e.code === 'KeyW' || e.code === 'ArrowUp') { triggerDash(); }
+    });
+
+    document.addEventListener('keyup', (e) => {
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.left = false;
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.right = false;
+        if (e.code === 'Space') keys.shoot = false;
+    });
+
+    const touchRoles = new Map();
+    const touchStartInfo = new Map();
+    let lastTapTime = 0;
+
+    function hasTouchRole(role) {
+        for (const r of touchRoles.values()) if (r === role) return true;
+        return false;
+    }
+
+    function touchToGame(touch) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (touch.clientX - rect.left) * (canvas.width / rect.width),
+            y: (touch.clientY - rect.top) * (canvas.height / rect.height)
+        };
+    }
+
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (gameState !== 'playing') return;
+        for (const touch of e.changedTouches) {
+            const now = performance.now();
+            if (now - lastTapTime < 300) triggerDash();
+            const p = touchToGame(touch);
+            touchStartInfo.set(touch.identifier, { x0: touch.clientX, y0: touch.clientY, t0: now });
+            if (!hasTouchRole('move')) {
+                touchRoles.set(touch.identifier, 'move');
+                keys.left = p.x < canvas.width / 2;
+                keys.right = p.x >= canvas.width / 2;
+            } else {
+                touchRoles.set(touch.identifier, 'fire');
+                keys.shoot = true;
+            }
+        }
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (gameState !== 'playing') return;
+        for (const touch of e.touches) {
+            if (touchRoles.get(touch.identifier) !== 'move') continue;
+            const p = touchToGame(touch);
+            keys.left = p.x < canvas.width / 2;
+            keys.right = p.x >= canvas.width / 2;
+        }
+    });
+
+    function endTouch(touch) {
+        const role = touchRoles.get(touch.identifier);
+        if (role === 'move') {
+            keys.left = false; keys.right = false;
+        } else if (role === 'fire') {
+            keys.shoot = false;
+        }
+        const info = touchStartInfo.get(touch.identifier);
+        if (info) {
+            const dt = performance.now() - info.t0;
+            const dx = Math.abs(touch.clientX - info.x0);
+            const dy = Math.abs(touch.clientY - info.y0);
+            if (dt < 250 && dx < 20 && dy < 20) lastTapTime = performance.now();
+        }
+        touchRoles.delete(touch.identifier);
+        touchStartInfo.delete(touch.identifier);
+    }
+
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        for (const touch of e.changedTouches) endTouch(touch);
+    });
+
+    canvas.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        for (const touch of e.changedTouches) endTouch(touch);
+    });
+
+    initStarField();
+    requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
