@@ -10,15 +10,15 @@ A web-based game database interface for browsing and filtering character data in
 - **响应式设计** – 界面友好，操作直观
 
 ## 使用方法
-在导引列选择进入两个列表页或两个小游戏
-使用搜索栏查找特定游戏
-通过筛选工具栏应用筛选条件
-点击列标题对结果进行排序
-在数据表或详情页中查看详细信息
+- 在导引列选择进入两个列表页或两个小游戏
+- 使用搜索栏查找特定游戏
+- 通过筛选工具栏应用筛选条件
+- 点击列标题对结果进行排序
+- 在数据表或详情页中查看详细信息
 
 ## 公告
-因为本次网页更新对原网页的改动幅度过大，群公告所示网页链接已自动重定向
-若有查询需求，请使用https://wwww-qe.github.io/PLAYER-ILLUSTRATION-OF-TERRA-INVESTMENT-ADVANCED-CLASS/Navigation/
+- 因为本次网页更新对原网页的改动幅度过大，群公告所示网页链接已自动重定向
+- 若有查询需求，请使用https://wwww-qe.github.io/PLAYER-ILLUSTRATION-OF-TERRA-INVESTMENT-ADVANCED-CLASS/Navigation/
 
 ## 技术细节
 - 单页 HTML 应用程序
