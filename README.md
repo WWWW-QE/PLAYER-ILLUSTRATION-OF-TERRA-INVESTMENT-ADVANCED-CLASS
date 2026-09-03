@@ -21,7 +21,7 @@ A web-based game database interface for browsing and filtering character data in
 - 若有查询需求，请使用https://wwww-qe.github.io/PLAYER-ILLUSTRATION-OF-TERRA-INVESTMENT-ADVANCED-CLASS/Navigation/
 
 ## 技术细节
-- 单页 HTML 应用程序
+- 多页 HTML 应用程序
 - 基于 JavaScript 的筛选和排序功能
 - 采用 CSS 样式设计，呈现现代外观
 
