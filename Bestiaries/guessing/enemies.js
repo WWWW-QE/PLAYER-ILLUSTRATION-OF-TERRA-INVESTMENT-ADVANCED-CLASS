@@ -5453,7 +5453,7 @@ var playersData = [
   },
   {
     "name": "“桥夹”克里夫",
-    "nickname": "",
+    "nickname": "桥夹",
     "icon": "https://media.prts.wiki/2/21/%E5%A4%B4%E5%83%8F_%E6%95%8C%E4%BA%BA_%E2%80%9C%E6%A1%A5%E5%A4%B9%E2%80%9D%E5%85%8B%E9%87%8C%E5%A4%AB.png",
     "number": "BSC",
     "level": "高级领袖",
