@@ -5679,7 +5679,7 @@ var playersData = [
     "frozen": "无",
     "disarmedCombat": "无",
     "palsy": "无",
-    "cost": "",
+    "cost": "1.9+0",
     "ability": "无",
     "description": "这哥们可是正经八百的卡西米尔独立骑士，他专业就专业在……呃，严谨的着装风格和头盔样式？"
   },
@@ -5708,7 +5708,7 @@ var playersData = [
     "frozen": "无",
     "disarmedCombat": "无",
     "palsy": "无",
-    "cost": "",
+    "cost": "20+4",
     "ability": "\"出场时获得可以吸收10002点法术伤害的屏障<br>该屏障存在时生命上限+50%，攻速+50\"",
     "description": ""
   },
@@ -5737,7 +5737,7 @@ var playersData = [
     "frozen": "无",
     "disarmedCombat": "无",
     "palsy": "无",
-    "cost": "",
+    "cost": "25+15",
     "ability": "普通攻击对攻击范围内所有我方单位造成物理溅射伤害",
     "description": ""
   },
